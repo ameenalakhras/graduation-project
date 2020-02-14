@@ -1,8 +1,11 @@
 from django.db import models
+from django.conf.settings import AUTH_USER_MODEL
+
+from main.models import SoftDeleteModel, BaseModel
 
 # Create your models here.
 
-class Email():
+class Email(SoftDeleteModel, BaseModel):
     sender = models.ForeignKey(AUTH_USER_MODEL)
     receiver = models.ManyToManyField(AUTH_USER_MODEL)
     title = models.CharField(max_length=50)
