@@ -16,5 +16,6 @@ EXPOSE 3000
 EXPOSE 8000
 STOPSIGNAL SIGINT
 #CMD ["sleep", "infinity"]
-#CMD ["python", "manage.py", "migrate"]
+CMD ["python", "manage.py", "makemigrations"]
+CMD ["python", "manage.py", "migrate"]
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
