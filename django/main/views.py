@@ -1,5 +1,5 @@
-from reservation.models import Room, Reserve
-from api.serializers import RoomAvailableSerializer, ReserveSerializer
+from main.models import UserProfile, Attachment
+from main.serializers import UserProfileSerializer, AttachmentSerializer, NotificationSerializer
 
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -11,20 +11,20 @@ import datetime
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 
 
-class PermissionViewSet(viewsets.ModelViewSet):
-    queryset = Permission.objects.all()
-    serializer_class = PermissionSerializer
-    permission_classes = [IsAuthenticated]
+# class PermissionViewSet(viewsets.ModelViewSet):
+#     queryset = Permission.objects.all()
+#     serializer_class = PermissionSerializer
+#     permission_classes = [IsAuthenticated]
 
 
 class AttachmentViewSet(viewsets.ModelViewSet):
     queryset = Attachment.objects.all()
     serializer_class = AttachmentSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 #
 # class SettingsOptionsSet(viewsets.ModelViewSet):

@@ -1,13 +1,13 @@
 from django.db import models
 from main.utils import get_avatar_path
-from django.conf.settings import AUTH_USER_MODEL
+from django.conf import settings
 
 
 class SoftDeleteModel(models.Model):
-    deleted_at = models.DateTimeField()
-    deleted = models.BooleanField(default=True)
+    deleted_at = models.DateTimeField()
+    deleted = models.BooleanField(default=True)
 
-    def delete(self):
+    def delete(self):
         self.deleted = True
         self.deleted_at = timezone.now()
         super.save()
@@ -26,15 +26,15 @@ class BaseModel(models.Model):
 
 
 class UserProfile(SoftDeleteModel, BaseModel):
-    user = models.OneToOneField(AUTH_USER_MODEL, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to=get_avatar_path, storage=get_storage())
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to=get_avatar_path)
 
     def __str__(self):
         return self.user.username
 
 
 class Notification(BaseModel):
-    receiver = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
+    receiver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     read = models.BooleanField(default=False)
     content = models.CharField(max_length=1000)
 
@@ -50,9 +50,9 @@ class AttachmentType(BaseModel):
 
 
 class Attachment(SoftDeleteModel, BaseModel):
-    uploader = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE)
-    title = models.CharField(max_length=50)
-    file = models.FileField()
+    uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=50)
+    file = models.FileField()
     _type = models.ForeignKey(AttachmentType, on_delete=models.CASCADE)
 
 

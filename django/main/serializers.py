@@ -1,8 +1,7 @@
 
 from rest_framework import serializers
 # from rest_framework.decorators import api_view, permission_classes
-# from reservation.models import  Room, Reserve
-
+from main.models import UserProfile, Attachment, Notification
 
 class UserProfileSerializer(serializers.ModelSerializer):
         class Meta:

@@ -1,10 +1,10 @@
 from rest_framework import routers
-from api.views import RoomAvailableSet, ReserveViewSet
+from main.views import UserProfileViewSet, AttachmentViewSet
 
 router = routers.DefaultRouter()
 
-router.register(r'available_rooms', RoomAvailableSet)
-router.register(r'reserve', ReserveViewSet)
+router.register('user_profile', UserProfileViewSet)
+router.register("attachment", AttachmentViewSet)
+# router.register('permission', PermissionViewSet)
 
 urlpatterns = router.urls
-
