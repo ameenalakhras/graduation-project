@@ -1,5 +1,8 @@
 
 
+def get_storage():
+    return ''
+
 
 
 def get_avatar_path(instance, filename):
