@@ -9,14 +9,14 @@ class BaseModel(models.Model):
     fields into all the tables in the DataBase
     """
     created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
+    modified_at = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         abstract = True
 
 
 class SoftDeleteModel(BaseModel):
-    deleted_at = models.DateTimeField()
+    deleted_at = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False)
 
     def delete(self):

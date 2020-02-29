@@ -7,7 +7,7 @@ from main.models import UserProfile
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     email_verified = models.BooleanField(default=False)
-    email_verification_date = models.DateTimeField()
+    email_verification_date = models.DateTimeField(null=True)
 
     def get_profile(self):
         user_profile = UserProfile.objects.get(user=self)
