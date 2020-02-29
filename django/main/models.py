@@ -3,16 +3,6 @@ from main.utils import get_avatar_path
 from django.conf import settings
 
 
-class SoftDeleteModel(models.Model):
-    deleted_at = models.DateTimeField()
-    deleted = models.BooleanField(default=True)
-
-    def delete(self):
-        self.deleted = True
-        self.deleted_at = timezone.now()
-        super.save()
-
-
 class BaseModel(models.Model):
     """
     a Base Model to load the create_date and modified_date
@@ -25,7 +15,22 @@ class BaseModel(models.Model):
         abstract = True
 
 
-class UserProfile(SoftDeleteModel, BaseModel):
+class SoftDeleteModel(BaseModel):
+    deleted_at = models.DateTimeField()
+    deleted = models.BooleanField(default=False)
+
+    def delete(self):
+        self.deleted = True
+        self.deleted_at = timezone.now()
+        super.save()
+
+    # telling django that the SoftDeleteModel is an abstract class
+    class Meta:
+        abstract = True
+
+
+
+class UserProfile(SoftDeleteModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to=get_avatar_path)
 
@@ -49,7 +54,7 @@ class AttachmentType(BaseModel):
     name = models.CharField(max_length=50)
 
 
-class Attachment(SoftDeleteModel, BaseModel):
+class Attachment(SoftDeleteModel):
     uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     file = models.FileField()
