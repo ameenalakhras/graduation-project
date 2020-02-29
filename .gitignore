@@ -1,6 +1,6 @@
 .env
 */migrations/
-
+django/composeexample/
 
 #django
 *.log
