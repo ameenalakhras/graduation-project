@@ -1,3 +1,8 @@
+from rest_framework import serializers
+from classroom.models import ClassRoom, Comments, Task, Post, ClassRoomTeacher
+
+
+
 class ClassRoomSerializer(serializers.ModelSerializer):
         class Meta:
             model = ClassRoom

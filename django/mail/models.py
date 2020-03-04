@@ -5,7 +5,7 @@ from main.models import SoftDeleteModel
 
 # Create your models here.
 
-class Email(SoftDeleteModel):
+class Mail(SoftDeleteModel):
     sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="email_sender")
     receiver = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="receiver_users")
     title = models.CharField(max_length=50)

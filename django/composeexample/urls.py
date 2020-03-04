@@ -21,7 +21,11 @@ from django.urls import path, include, re_path
 
 urlpatterns = [
     re_path('^api-auth/', include('rest_framework.urls')),
-    # path("", include("main.urls")),
     path('admin/', admin.site.urls),
+    # path("api/", include("main.urls")),
+    path("api/", include("classroom.urls")),
+    # path("api/", include("course.urls")),
+    # path("api/", include("mail.urls")),
+    # path("")
 
 ]

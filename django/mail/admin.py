@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from mail.models import Email
+from mail.models import Mail
 # Register your models here.
 
-admin.site.register(Email)
+admin.site.register(Mail)

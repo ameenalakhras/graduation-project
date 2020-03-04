@@ -1,5 +1,10 @@
-from django.shortcuts import render
+from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer, PostSerializer, ClassRoomTeacherSerializer
+from classroom.models import ClassRoom, Comments, Task, Post, ClassRoomTeacher
 
+from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 # Create your views here.
 
 class ClassRoomViewSet(viewsets.ModelViewSet):
@@ -9,8 +14,8 @@ class ClassRoomViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
+    queryset = Comments.objects.all()
+    serializer_class = CommentsSerializer
     permission_classes = [IsAuthenticated]
 
 class TaskViewSet(viewsets.ModelViewSet):
