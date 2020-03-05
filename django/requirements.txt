@@ -7,3 +7,12 @@ psycopg2==2.8.4
 pytz==2019.3
 sqlparse==0.3.0
 dj-database-url
+# herokuapp requirements
+gunicorn==20.0.4
+whitenoise
+dj_database_url
+psycopg2
+sendgrid
+# AWS S3 requirements
+boto3==1.10.45
+django-storages==1.8
