@@ -1,25 +1,36 @@
 
 from rest_framework import serializers
 # from rest_framework.decorators import api_view, permission_classes
-from main.models import UserProfile, Attachment, Notification
+from main.models import UserProfile, Attachment#, Notification
 
 class UserProfileSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = UserProfile
-            fields = '__all__'
+
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+
+    class Meta:
+        model = UserProfile
+        # fields = '__all__'
+        exclude = ('deleted_at','deleted' )
 
 
 class AttachmentSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Attachment
-            fields = '__all__'
+    uploader = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+    class Meta:
+        model = Attachment
+        # fields = '__all__'
+        exclude = ('deleted_at','deleted' )
 
 
-class NotificationSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Notification
-            fields = '__all__'
 
+# class NotificationSerializer(serializers.ModelSerializer):
+#         class Meta:
+#             model = Notification
+#             fields = '__all__'
+#
 
 #
 # class PermissionSerializer(serializers.ModelSerializer):

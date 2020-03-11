@@ -16,11 +16,11 @@ import dj_database_url
 # heroku or local
 database_status = "global"
 # heroku or local
-server_status = "global"
+server_status = "local"
 WEBSITE_NAME = "aug-classroom"
 WEBSITE_GLOBAL_URL = f'{WEBSITE_NAME}.herokuapp.com'
-USE_S3 = True
-USE_AWS_FOR_OFFLINE_USAGE=False
+USE_S3 = False
+USE_AWS_FOR_OFFLINE_USAGE=True
 DEBUG = True
 # the name for the directory that the settings.py file is in
 PROJECT_MAIN_APP_NAME="composeexample"
