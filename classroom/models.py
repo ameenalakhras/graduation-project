@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 
-from classroom.utils import get_classroom_logo_image, get_classroom_bg_image
+from classroom.utils import get_classroom_bg_path, get_classroom_logo_path
 
 from main.models import SoftDeleteModel, BaseModel, Attachment
 from main.utils import get_storage
@@ -9,8 +9,8 @@ from main.utils import get_storage
 
 class ClassRoom(SoftDeleteModel):
     title = models.CharField(max_length=50)
-    logo_img = models.ImageField(upload_to=get_classroom_logo_image, storage=get_storage())
-    background_img = models.ImageField(upload_to=get_classroom_bg_image, storage=get_storage())
+    logo_img = models.ImageField(upload_to=get_classroom_logo_path, storage=get_storage())
+    background_img = models.ImageField(upload_to=get_classroom_bg_path, storage=get_storage())
 
     description = models.TextField
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

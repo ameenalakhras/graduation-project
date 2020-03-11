@@ -6,7 +6,7 @@ from main.serializers import soft_delete_fields
 
 
 class ClassRoomSerializer(serializers.ModelSerializer):
-    creator = serializers.HiddenField(
+    user = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
     class Meta:
@@ -15,7 +15,7 @@ class ClassRoomSerializer(serializers.ModelSerializer):
 
 
 class CommentsSerializer(serializers.ModelSerializer):
-    creator = serializers.HiddenField(
+    user = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
     class Meta:

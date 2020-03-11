@@ -1,5 +1,6 @@
 add avatar path and apply it from the settings file
-add attachment file path and apply it from the settings file 
+add attachment file path and apply it from the settings file
 the classroom teacher should have permission to delete any post from his classroom (even if it's from a student)
 the post creator should have the permission to delete any comment on his post (as long as it's not the teachers' comment)
 limit the AWS S3 access to the users >> the users without the permission can't get the image by only having its link
+limit the attchments in the classroom class to only the once that the user has

@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 
-from main.utils import get_avatar_path
+from main.utils import get_avatar_path, get_attchment_path
 
 
 class BaseModel(models.Model):
@@ -62,7 +62,7 @@ class AttachmentType(BaseModel):
 class Attachment(SoftDeleteModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
-    file = models.FileField()
+    file = models.FileField(upload_to=get_attchment_path)
     _type = models.ForeignKey(AttachmentType, on_delete=models.CASCADE)
 
     def __str__(self):

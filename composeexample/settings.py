@@ -177,10 +177,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 # STATIC_URL = '/static/'
-
-
-# DEFAULT_PATH = "default"
-# DEFAULT_USER_PATH = os.path.join(DEFAULT_PATH, 'user')
+DEFAULT_PATH = "images/"
+DEFAULT_USER_PATH = os.path.join(DEFAULT_PATH, 'users')
 #
 # DEFAULT_USER_AVATAR_PATH = os.path.join(DEFAULT_USER_PATH, 'avatar/index.png')
 # DEFAULT_USER_BACKGROUND_PATH = os.path.join(DEFAULT_USER_PATH, 'cover/index.jpg')
