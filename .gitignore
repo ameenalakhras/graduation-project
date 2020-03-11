@@ -6,4 +6,3 @@ images/
 postgres/
 */migrations/*
 !*/migrations/__init__.py
-to\ do\ list.txt
