@@ -3,6 +3,9 @@ from rest_framework import serializers
 # from rest_framework.decorators import api_view, permission_classes
 from main.models import UserProfile, Attachment#, Notification
 
+soft_delete_fields = ('deleted_at','deleted')
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
 
     user = serializers.HiddenField(
@@ -11,18 +14,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        # fields = '__all__'
-        exclude = ('deleted_at','deleted' )
+        exclude = soft_delete_fields
 
 
 class AttachmentSerializer(serializers.ModelSerializer):
-    uploader = serializers.HiddenField(
-        default=serializers.CurrentUserDefault(),
-    )
+
     class Meta:
         model = Attachment
-        # fields = '__all__'
-        exclude = ('deleted_at','deleted' )
+        exclude = soft_delete_fields
+        read_only_fields = ('user',)
 
 
 
