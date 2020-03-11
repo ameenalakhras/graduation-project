@@ -1,6 +1,6 @@
 from main.models import UserProfile, Attachment
 from main.serializers import UserProfileSerializer, AttachmentSerializer#, NotificationSerializer
-from composeexample.permissions import OwnProfilePermission
+from composeexample.permissions import OwnerEditOnly
 
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -10,7 +10,7 @@ import datetime
 class UserProfileViewSet(viewsets.ModelViewSet):
     queryset = UserProfile.objects.filter(deleted=False)
     serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, OwnerEditOnly]
     # prevented "post" requests (making profile isn't allowed since it's auto generated)
     http_method_names = ['get', 'put', 'head', 'patch']
 
@@ -24,9 +24,9 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 class AttachmentViewSet(viewsets.ModelViewSet):
     queryset = Attachment.objects.filter(deleted=False)
     serializer_class = AttachmentSerializer
-    permission_classes = [IsAuthenticated, OwnProfilePermission]
+    permission_classes = [IsAuthenticated, OwnerEditOnly]
     def perform_create(self, serializer):
-        serializer.save(uploader=self.request.user)
+        serializer.save(user=self.request.user)
 #
 # class SettingsOptionsSet(viewsets.ModelViewSet):
 #     queryset = SettingsOptions.objects.all()

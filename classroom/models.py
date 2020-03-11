@@ -13,7 +13,7 @@ class ClassRoom(SoftDeleteModel):
     background_img = models.ImageField(upload_to=get_classroom_bg_image, storage=get_storage())
 
     description = models.TextField
-    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     attachments = models.ManyToManyField(Attachment)
 
 
@@ -39,7 +39,7 @@ class Comments(SoftDeleteModel):
 class Task(SoftDeleteModel):
     degree = models.IntegerField()
     # creator: originally a teacher or an assistant
-    creator = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     content = models.TextField()
     # attachments = models.ManyToManyField(Attachment)

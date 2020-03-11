@@ -1,7 +1,7 @@
 from django.db import models
 from main.models import SoftDeleteModel, BaseModel
 from django.conf import settings
-
+from classroom.models import ClassRoom
 # Create your models here.
 
 class Provider(SoftDeleteModel):
@@ -18,8 +18,8 @@ class MediaType(SoftDeleteModel):
 
 
 class Media(SoftDeleteModel):
-    classroom = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="media_classroom")
-    publisher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="media_publisher")
+    classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE, related_name="media_classroom")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="media_publisher")
     _type = models.ForeignKey(MediaType, on_delete=models.CASCADE, related_name="media_type")
     #youtube as default
     provider = models.ForeignKey(Provider, on_delete=models.CASCADE, related_name="media_providor")

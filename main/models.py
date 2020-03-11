@@ -60,7 +60,7 @@ class AttachmentType(BaseModel):
 
 
 class Attachment(SoftDeleteModel):
-    uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     file = models.FileField()
     _type = models.ForeignKey(AttachmentType, on_delete=models.CASCADE)
