@@ -9,12 +9,12 @@ from main.utils import get_storage
 
 class ClassRoom(SoftDeleteModel):
     title = models.CharField(max_length=50)
-    logo_img = models.ImageField(upload_to=get_classroom_logo_path, storage=get_storage())
-    background_img = models.ImageField(upload_to=get_classroom_bg_path, storage=get_storage())
+    logo_img = models.ImageField(upload_to=get_classroom_logo_path, storage=get_storage(), null=True)
+    background_img = models.ImageField(upload_to=get_classroom_bg_path, storage=get_storage(), null=True)
 
-    description = models.TextField
+    description = models.TextField(null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    attachments = models.ManyToManyField(Attachment)
+    attachments = models.ManyToManyField(Attachment, blank=True)
 
 
 class ClassRoomTeacher(SoftDeleteModel):
@@ -37,21 +37,21 @@ class Comments(SoftDeleteModel):
 
 
 class Task(SoftDeleteModel):
-    degree = models.IntegerField()
+    average_degree = models.IntegerField(null=True)
     # creator: originally a teacher or an assistant
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     content = models.TextField()
-    # attachments = models.ManyToManyField(Attachment)
+    attachments = models.ManyToManyField(Attachment, blank=True)
 
 class TaskSOlutionInfo(SoftDeleteModel):
     attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE)
-    notes = models.CharField(max_length=300)
-    accepted = models.BooleanField(default=False)
+    notes = models.CharField(max_length=300, null=True)
+    accepted = models.BooleanField(null=True)
 
 class TaskSolution(SoftDeleteModel):
-    accepted = models.BooleanField(default=False)
-    solutionInfo = models.ManyToManyField(Attachment)
+    accepted = models.BooleanField(null=True)
+    solutionInfo = models.ManyToManyField(Attachment, blank=True)
     task = models.OneToOneField(Task, on_delete=models.CASCADE)
 
 

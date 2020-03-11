@@ -34,7 +34,7 @@ class SoftDeleteModel(BaseModel):
 
 class UserProfile(SoftDeleteModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to=get_avatar_path)
+    avatar = models.ImageField(upload_to=get_avatar_path, null=True)
 
     def __str__(self):
         return self.user.username
@@ -45,8 +45,8 @@ class Notification(BaseModel):
     read = models.BooleanField(default=False)
     content = models.CharField(max_length=1000)
 
-    read_at = models.DateTimeField()
-    received_at = models.DateTimeField()
+    read_at = models.DateTimeField(null=True)
+    received_at = models.DateTimeField(null=True)
 
 
 class AttachmentType(BaseModel):
