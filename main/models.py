@@ -1,6 +1,8 @@
 from django.db import models
-from main.utils import get_avatar_path
 from django.conf import settings
+from django.utils import timezone
+
+from main.utils import get_avatar_path
 
 
 class BaseModel(models.Model):
@@ -22,7 +24,7 @@ class SoftDeleteModel(BaseModel):
     def delete(self):
         self.deleted = True
         self.deleted_at = timezone.now()
-        super.save()
+        super().save()
 
     # telling django that the SoftDeleteModel is an abstract class
     class Meta:
@@ -53,6 +55,9 @@ class AttachmentType(BaseModel):
     """
     name = models.CharField(max_length=50)
 
+    def __str__(self):
+        return self.name
+
 
 class Attachment(SoftDeleteModel):
     uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -60,7 +65,8 @@ class Attachment(SoftDeleteModel):
     file = models.FileField()
     _type = models.ForeignKey(AttachmentType, on_delete=models.CASCADE)
 
-
+    def __str__(self):
+        return self.title
 
 #
 # class Permissions():
