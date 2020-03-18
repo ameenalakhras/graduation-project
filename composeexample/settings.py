@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
     'storages',
     'rest_framework',
+    'corsheaders',
 
     'authentication',
     'main',
@@ -59,6 +60,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -98,7 +100,7 @@ WSGI_APPLICATION = f'{PROJECT_MAIN_APP_NAME}.wsgi.application'
 #         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
-
+CORS_ORIGIN_ALLOW_ALL = True   
 
 if server_status == "local":
     ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0"]
@@ -130,7 +132,7 @@ if server_status == "local":
 
 
 elif server_status == "global":
-    ALLOWED_HOSTS = [WEBSITE_GLOBAL_URL]
+    ALLOWED_HOSTS = ['*']
     if database_status == "global":
         DATABASES={}
         DATABASES['default'] = dj_database_url.config()
