@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 class ClassRoomViewSet(viewsets.ModelViewSet):
     queryset = ClassRoom.objects.filter(deleted=False)
     serializer_class = ClassRoomSerializer
-    # permission_classes = [IsAuthenticated, OwnerEditOnly]
+    permission_classes = [IsAuthenticated, OwnerEditOnly]
 
 
 class CommentViewSet(viewsets.ModelViewSet):
