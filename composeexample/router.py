@@ -6,6 +6,8 @@ from classroom.views import ClassRoomViewSet, CommentViewSet, TaskViewSet, PostV
 from mail.views import MailViewSet
 from main.views import UserProfileViewSet, AttachmentViewSet
 
+from authentication import urls as authentication_urls
+
 
 router = routers.DefaultRouter()
 
@@ -31,4 +33,5 @@ router.register("attachment", AttachmentViewSet)
 
 urlpatterns = [
     path('api/',include(router.urls)),
+    path("users/", include(authentication_urls, namespace='users'))
 ]

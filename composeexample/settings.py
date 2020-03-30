@@ -50,6 +50,7 @@ INSTALLED_APPS = [
 
     'storages',
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
 
     'authentication',
@@ -89,6 +90,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = f'{PROJECT_MAIN_APP_NAME}.wsgi.application'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+}
+
 
 
 # Database
