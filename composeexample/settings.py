@@ -21,10 +21,10 @@ AUTH_USER_MODEL = "authentication.User"
 
 WEBSITE_GLOBAL_URL = f'{WEBSITE_NAME}.herokuapp.com'
 
+# global or local, if it doesn't exists local is the default (helps with testing inside of travis)
+database_status = os.getenv("DATABASE_STATUS") or "local"
 # global or local
-database_status = os.getenv("DATABASE_STATUS")
-# global or local
-server_status = os.getenv("SERVER_STATUS")
+server_status = os.getenv("SERVER_STATUS") or "local"
 
 # convert string to boolean
 USE_S3 = (os.getenv("USE_S3") == "True")
@@ -112,19 +112,30 @@ REST_FRAMEWORK = {
 #         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
-CORS_ORIGIN_ALLOW_ALL = True   
+CORS_ORIGIN_ALLOW_ALL = True
 
 if server_status == "local":
     ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0"]
     if database_status == "local":
+        # # this approach (using postgres for testing) works inside of docker, it seems hard to run without the
+        # # need of docker (i can't run it as postgres without docker existence for now)
+        # DATABASES = {
+        #     'default': {
+        #         'ENGINE': 'django.db.backends.postgresql',
+        #         'NAME': os.getenv("POSTGRES_DB"),
+        #         'USER': os.getenv("POSTGRES_USER"),
+        #         'PASSWORD': os.getenv("POSTGRES_PASSWORD"),
+        #         'HOST': os.getenv("POSTGRES_HOST"),
+        #         'PORT': os.getenv("POSTGRES_PORT"),
+        #         # 'TEST': {
+        #         #     'NAME': os.getenv("POSTGRES_TEST_DB"),
+        #         # },
+        #     }
+        # }
         DATABASES = {
             'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': os.getenv("POSTGRES_DB"),
-                'USER': os.getenv("POSTGRES_USER"),
-                'PASSWORD': os.getenv("POSTGRES_PASSWORD"),
-                'HOST': os.getenv("POSTGRES_HOST"),
-                'PORT': os.getenv("POSTGRES_PORT"),
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
             }
         }
     elif database_status == "global":
