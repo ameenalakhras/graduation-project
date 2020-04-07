@@ -83,6 +83,12 @@ class UserLoginAPIViewTestCase(APITestCase):
         self.assertEqual(200, response.status_code)
         self.assertTrue("auth_token" in json.loads(response.content))
 
+    def test_authentication_with_not_activated_user(self):
+        self.user.is_active = False
+        self.user.save()
+        response = self.client.post(self.url, {"username": self.username, "password": self.password})
+        self.assertEqual(400, response.status_code)
+
 
 class UserTokenAPIViewTestCase(APITestCase):
     def url(self, key):
