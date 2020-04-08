@@ -1,8 +1,10 @@
 
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, password_validation
 from authentication.models import User
 from django.contrib.auth.hashers import make_password
 from django.utils.translation import ugettext_lazy as _
+import django.contrib.auth.password_validation as validators
+from django.core import exceptions
 
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
@@ -45,6 +47,38 @@ class UserLoginSerializer(serializers.Serializer):
             return attrs
         else:
             raise serializers.ValidationError(self.error_messages['invalid_credentials'])
+
+
+class UserPasswordChangeSerializer(serializers.Serializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+    default_error_messages = {
+        'invalid_old_password': _('Old password is invalid'),
+        'invalid_new_password': _('You need a stronger Password'),
+    }
+
+    def __init__(self, *args, **kwargs):
+        super(UserPasswordChangeSerializer, self).__init__(*args, **kwargs)
+        self.user = None
+
+    def validate(self, attrs):
+
+        # make sure the password is strong enough through django validation
+        try:
+            password_validation.validate_password(attrs.get('new_password'))
+        except exceptions.ValidationError as e:
+            raise serializers.ValidationError(self.error_messages['invalid_new_password'])
+
+        self.user = attrs.get("user")
+        valid_password = self.user.check_password(raw_password=attrs.get("old_password"))
+        if valid_password:
+            return attrs
+        else:
+            raise serializers.ValidationError(self.error_messages['invalid_old_password'])
 
 
 class TokenSerializer(serializers.ModelSerializer):
