@@ -40,13 +40,19 @@ class UserLoginSerializer(serializers.Serializer):
         self.user = None
 
     def validate(self, attrs):
-        self.user = authenticate(username=attrs.get("username"), password=attrs.get('password'))
-        if self.user:
+        try:
+            self.user = User.objects.get(username=attrs.get("username"))
+        except User.DoesNotExist:
+            raise serializers.ValidationError(self.error_messages['invalid_credentials'])
+        else:
             if not self.user.is_active:
                 raise serializers.ValidationError(self.error_messages['inactive_account'])
-            return attrs
-        else:
-            raise serializers.ValidationError(self.error_messages['invalid_credentials'])
+
+            self.user = authenticate(username=attrs.get("username"), password=attrs.get('password'))
+            if self.user:
+                return attrs
+            else:
+                raise serializers.ValidationError(self.error_messages['invalid_credentials'])
 
 
 class UserPasswordChangeSerializer(serializers.Serializer):

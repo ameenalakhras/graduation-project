@@ -5,7 +5,9 @@ from authentication.models import User
 from django.urls import reverse
 
 from rest_framework.authtoken.models import Token
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, force_authenticate
+
+from django.contrib.auth.hashers import make_password
 
 
 class UserRegistrationAPIViewTestCase(APITestCase):
@@ -87,6 +89,16 @@ class UserLoginAPIViewTestCase(APITestCase):
         self.user.is_active = False
         self.user.save()
         response = self.client.post(self.url, {"username": self.username, "password": self.password})
+        self.assertEqual(400, response.status_code)
+
+    def test_authentication_with_non_existant_user(self):
+        response = self.client.post(
+            self.url,
+            {
+                "username": "imaginaryUsername",
+                "password": "imaginaryPassword"
+             }
+        )
         self.assertEqual(400, response.status_code)
 
 
