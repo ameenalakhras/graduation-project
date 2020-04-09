@@ -90,6 +90,77 @@ class UserLoginAPIViewTestCase(APITestCase):
         self.assertEqual(400, response.status_code)
 
 
+class UserPasswordChangeTestCase(APITestCase):
+    url = reverse("users:password_change")
+
+    def setUp(self):
+        self.username = "ameen"
+        self.email = "ameen@gmail.com"
+        self.password = "actual_password"
+        self.user = User.objects.create_user(
+            self.username,
+            self.email,
+            self.password
+        )
+        self.token = Token.objects.create(user=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
+
+    def test_invalid_original_password(self):
+        data = {
+            "old_password": "some-wrong-password",
+            "new_password": "somePassword12%#"
+        }
+        response = self.client.put(self.url, data=data)
+        self.assertTrue("non_field_errors" in json.loads(response.content))
+        self.assertTrue("Old password is invalid" in json.loads(response.content)["non_field_errors"])
+        self.assertEqual(400, response.status_code)
+
+    def test_with_valid_data(self):
+        new_password = "strongPassword12%#"
+        data = {
+            "old_password": self.password,
+            "new_password": new_password
+        }
+        response = self.client.put(self.url, data=data)
+        self.assertEqual(200, response.status_code)
+
+        self.user = User.objects.get(username=self.username)
+        self.assertTrue(self.user.check_password(new_password))
+
+    def test_without_old_password_field(self):
+        data = {
+            "old_password": self.password,
+        }
+        response = self.client.put(self.url, data=data)
+        self.assertEqual(400, response.status_code)
+
+    def test_without_new_password_field(self):
+        data = {
+            "new_password": "strongPassword12%#",
+        }
+        response = self.client.put(self.url, data=data)
+        self.assertEqual(400, response.status_code)
+
+    def test_change_password_without_login_token(self):
+        self.client.credentials(HTTP_AUTHORIZATION='Token ')
+        new_password = "somePassword12%#"
+        data = {
+            "old_password": self.password,
+            "new_password": new_password
+        }
+        response = self.client.put(self.url, data=data)
+        self.assertEqual(401, response.status_code)
+
+    def test_new_weak_password(self):
+        new_password = "123456"
+        data = {
+            "old_password": self.password,
+            "new_password": new_password
+        }
+        response = self.client.put(self.url, data=data)
+        self.assertEqual(400, response.status_code)
+
+
 class UserTokenAPIViewTestCase(APITestCase):
     def url(self, key):
         return reverse("users:token", kwargs={"key": key})
