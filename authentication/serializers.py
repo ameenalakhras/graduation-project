@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, password_validation
 from authentication.models import User
 from django.contrib.auth.hashers import make_password
 from django.utils.translation import ugettext_lazy as _
-import django.contrib.auth.password_validation as validators
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import Group
 from django.core import exceptions
 
@@ -19,8 +19,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ("id", "username", "email", "password", "date_joined", "first_name", "last_name", "groups")
 
     def validate(self, attrs):
-        attrs['password'] = make_password(attrs['password'])
-        return attrs
+        try:
+            validate_password(attrs['password'])
+        except exceptions.ValidationError as e:
+            raise exceptions.ValidationError(e)
+        else:
+            attrs['password'] = make_password(attrs['password'])
+            return attrs
 
 
 class UserLoginSerializer(serializers.Serializer):
