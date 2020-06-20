@@ -4,6 +4,7 @@ from authentication.models import User
 from django.contrib.auth.hashers import make_password
 from django.utils.translation import ugettext_lazy as _
 import django.contrib.auth.password_validation as validators
+from django.contrib.auth.models import Group
 from django.core import exceptions
 
 from rest_framework import serializers
@@ -12,16 +13,12 @@ from rest_framework.authtoken.models import Token
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    confirm_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ("id", "username", "email", "password", "confirm_password", "date_joined")
+        fields = ("id", "username", "email", "password", "date_joined", "first_name", "last_name", "groups")
 
     def validate(self, attrs):
-        if attrs.get('password') != attrs.get('confirm_password'):
-            raise serializers.ValidationError("Those passwords don't match.")
-        del attrs['confirm_password']
         attrs['password'] = make_password(attrs['password'])
         return attrs
 
