@@ -1,9 +1,11 @@
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.generics import RetrieveDestroyAPIView
-from authentication.serializers import UserRegistrationSerializer, UserLoginSerializer, TokenSerializer
+from authentication.serializers import UserRegistrationSerializer, UserLoginSerializer, TokenSerializer, \
+    UserPasswordChangeSerializer
 
 
 class UserRegistrationAPIView(CreateAPIView):
@@ -46,6 +48,27 @@ class UserLoginAPIView(GenericAPIView):
             )
 
 
+class UserPasswordChange(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserPasswordChangeSerializer
+
+    def put(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.user
+            user.set_password(request.data["new_password"])
+            user.save()
+            return Response(
+                data={'status': 'password set'},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                data=serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
 class UserTokenAPIView(RetrieveDestroyAPIView):
     lookup_field = "key"
     serializer_class = TokenSerializer
@@ -66,34 +89,3 @@ class UserTokenAPIView(RetrieveDestroyAPIView):
             Token.objects.get(key=request.auth.key).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return super(UserTokenAPIView, self).destroy(request, key, *args, **kwargs)
-
-
-# @login_required
-# @require_http_methods(["POST"])
-# def update_password(request):
-#     """update the user password given the old and the new passwords"""
-#     current_password = request.POST.get('currentPassword', '')
-#     new_password = request.POST.get('newPassword', '')
-#     new_password_confirmation = request.POST.get('confirmNewPassword', '')
-#     user = authenticate(username=request.user.username, password=current_password)
-#
-#     if user is not None:
-#         if new_password == new_password_confirmation:
-#             request.user.set_password(new_password)
-#             request.user.save()
-#             message = "Password has been reset."
-#             status = True
-#         else:
-#             message = "new password and new password confirmation differ."
-#             status = False
-#     else:
-#         message = "old password is not right, please try again."
-#         status = False
-#
-#     response = JsonResponse({
-#         "answer": {
-#             "message": message,
-#             "status": status
-#         },
-#     })
-#     return response
