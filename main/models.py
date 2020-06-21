@@ -18,7 +18,7 @@ class BaseModel(models.Model):
 
 
 class SoftDeleteModel(BaseModel):
-    deleted_at = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
     deleted = models.BooleanField(default=False)
 
     def delete(self):

@@ -7,7 +7,7 @@ router.register('classroom', ClassRoomViewSet)
 router.register('comment', CommentViewSet)
 router.register('task', TaskViewSet)
 router.register('post', PostViewSet)
-router.register('classroomteacher', ClassRoomTeacherViewSet)
+# router.register('classroomteacher', ClassRoomTeacherViewSet)
 # router.register('profile', UserProfileViewSet)
 # router.register('permission', PermissionViewSet)
 

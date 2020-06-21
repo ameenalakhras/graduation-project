@@ -5,21 +5,33 @@ from classroom.utils import get_classroom_bg_path, get_classroom_logo_path
 
 from main.models import SoftDeleteModel, BaseModel, Attachment
 from main.utils import get_storage
-# AUTH_USER_MODEL =
+
+from classroom.utils import default_class_logo_img, default_class_background_img
+
 
 class ClassRoom(SoftDeleteModel):
     title = models.CharField(max_length=50)
-    logo_img = models.ImageField(upload_to=get_classroom_logo_path, storage=get_storage(), null=True)
-    background_img = models.ImageField(upload_to=get_classroom_bg_path, storage=get_storage(), null=True)
+    logo_img = models.ImageField(upload_to=get_classroom_logo_path, storage=get_storage(), null=True, default=default_class_logo_img())
+    background_img = models.ImageField(upload_to=get_classroom_bg_path, storage=get_storage(), null=True, default=default_class_background_img())
 
     description = models.TextField(null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="teacher_classrooms", null=True)
     attachments = models.ManyToManyField(Attachment, blank=True)
+    promo_code = models.CharField(max_length=20, unique=True, null=True)
+    allow_student_participation = models.BooleanField(default=True)
+    auto_accept_students = models.BooleanField(default=True)
+    archived = models.BooleanField(default=False)
+    students = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="student_classrooms")
+    student_requests = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="classroom_request")
+
+# class ClassRoomStudent(SoftDeleteModel):
+#     classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE, related_name="classroom_students")
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="student_class")
 
 
-class ClassRoomTeacher(SoftDeleteModel):
-    classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
-    user = models.ManyToManyField(settings.AUTH_USER_MODEL)
+# class ClassRoomTeacher(SoftDeleteModel):
+#     classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
+#     user = models.ManyToManyField(settings.AUTH_USER_MODEL)
 
 
 class Post(SoftDeleteModel):
@@ -44,19 +56,14 @@ class Task(SoftDeleteModel):
     content = models.TextField()
     attachments = models.ManyToManyField(Attachment, blank=True)
 
+
 class TaskSOlutionInfo(SoftDeleteModel):
     attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE)
     notes = models.CharField(max_length=300, null=True)
     accepted = models.BooleanField(null=True)
 
+
 class TaskSolution(SoftDeleteModel):
     accepted = models.BooleanField(null=True)
     solutionInfo = models.ManyToManyField(Attachment, blank=True)
     task = models.OneToOneField(Task, on_delete=models.CASCADE)
-
-
-
-# # many to many relation
-# class ClassroomAttchment(SoftDeleteModel):
-#     attachment (FK to attachment)
-#     classroom (FK to classroom)
