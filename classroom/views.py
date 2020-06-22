@@ -2,6 +2,9 @@
 from rest_framework.response import Response
 
 from rest_framework import status
+from django.urls import reverse, reverse_lazy
+
+from django.http import HttpResponseRedirect
 
 
 from composeexample.permissions import OnlyEnrolled, OwnerDeleteOnly
@@ -81,11 +84,10 @@ class ClassRoomViewSet(viewsets.ModelViewSet):
             if promo_code_exists:
                 obj = queryset.get(promo_code=promo_code)
                 if self.requester_inside_class(request, obj):
-                    # post request isn't allowed for insider users
-                    return Response(
-                        {"message": "method not allowed"},
-                        status=status.HTTP_405_METHOD_NOT_ALLOWED
-                    )
+                    # it will return the class info
+                    import ipdb;ipdb.set_trace()
+                    return HttpResponseRedirect(reverse("classroom_detail", kwargs={"pk": obj.id}))
+
                 else:
                     auto_accept_students = obj.auto_accept_students
                     if auto_accept_students:
