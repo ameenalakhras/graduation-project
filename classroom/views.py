@@ -36,7 +36,10 @@ class ClassRoomViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data)
         else:
-            return {"message": "user isn't registered in any group."}
+            return Response(
+                {"message": "user isn't registered in any group."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def destroy(self, request, *args, **kwargs):
         # if the request is coming from the owner of the classroom
@@ -101,6 +104,7 @@ class ClassRoomViewSet(viewsets.ModelViewSet):
                     {"message": "class not found"},
                     status=status.HTTP_404_NOT_FOUND
                 )
+
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comments.objects.filter(deleted=False)
