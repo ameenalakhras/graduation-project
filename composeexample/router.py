@@ -32,6 +32,6 @@ router.register("attachment", AttachmentViewSet)
 
 
 urlpatterns = [
-    path('api/',include(router.urls)),
+    # path('api/',include(router.urls)),
     path("users/", include(authentication_urls, namespace='users'))
 ]

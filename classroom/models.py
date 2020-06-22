@@ -15,14 +15,14 @@ class ClassRoom(SoftDeleteModel):
     background_img = models.ImageField(upload_to=get_classroom_bg_path, storage=get_storage(), null=True, default=default_class_background_img())
 
     description = models.TextField(null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="teacher_classrooms", null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="teacher_classrooms")
     attachments = models.ManyToManyField(Attachment, blank=True)
     promo_code = models.CharField(max_length=20, unique=True, null=True)
     allow_student_participation = models.BooleanField(default=True)
     auto_accept_students = models.BooleanField(default=True)
     archived = models.BooleanField(default=False)
-    students = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="student_classrooms")
-    student_requests = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="classroom_request")
+    students = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="student_classrooms", blank=True)
+    student_requests = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="classroom_request", blank=True)
 
 # class ClassRoomStudent(SoftDeleteModel):
 #     classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE, related_name="classroom_students")
