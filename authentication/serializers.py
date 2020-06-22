@@ -1,15 +1,15 @@
 
 from django.contrib.auth import authenticate, password_validation
-from authentication.models import User
 from django.contrib.auth.hashers import make_password
-from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth.models import Group
+from django.utils.translation import ugettext_lazy as _
 from django.core import exceptions
 
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from django.contrib.auth.models import Group
+
+from authentication.models import User
+
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)

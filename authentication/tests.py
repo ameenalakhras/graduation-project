@@ -5,38 +5,33 @@ from authentication.models import User
 from django.urls import reverse
 
 from rest_framework.authtoken.models import Token
-from rest_framework.test import APITestCase, force_authenticate
-
-from django.contrib.auth.hashers import make_password
+from rest_framework.test import APITestCase
 
 
 class UserRegistrationAPIViewTestCase(APITestCase):
     url = reverse("users:list")
 
-    def test_invalid_password(self):
-        """
-        Test to verify that a post call with invalid passwords
-        """
-        user_data = {
+    def setUp(self):
+        self.user_data = {
             "username": "testuser",
             "email": "test@testuser.com",
-            "password": "password",
-            "confirm_password": "INVALID_PASSWORD"
+            "password": "strongPassword12$@",
         }
-        response = self.client.post(self.url, user_data)
+
+    def test_invalid_password(self):
+        """
+        Test to verify that a post call with invalid passwords (weak password here)
+        """
+        weak_password = "123456"
+        self.user_data["password"] = weak_password
+        response = self.client.post(self.url, self.user_data)
         self.assertEqual(400, response.status_code)
 
     def test_user_registration(self):
         """
         Test to verify that a post call with user valid data
         """
-        user_data = {
-            "username": "testuser",
-            "email": "test@testuser.com",
-            "password": "strongPassword12$@",
-            "confirm_password": "strongPassword12$@"
-        }
-        response = self.client.post(self.url, user_data)
+        response = self.client.post(self.url, self.user_data)
         self.assertEqual(201, response.status_code)
         self.assertTrue("token" in json.loads(response.content))
 
@@ -44,21 +39,11 @@ class UserRegistrationAPIViewTestCase(APITestCase):
         """
         Test to verify that a post call with already exists username
         """
-        user_data_1 = {
-            "username": "testuser",
-            "email": "test@testuser.com",
-            "password": "strongPassword12$@",
-            "confirm_password": "strongPassword12$@"
-        }
-        response = self.client.post(self.url, user_data_1)
+        response = self.client.post(self.url, self.user_data)
         self.assertEqual(201, response.status_code)
 
-        user_data_2 = {
-            "username": "testuser",
-            "email": "test2@testuser.com",
-            "password": "strongPassword12$@",
-            "confirm_password": "strongPassword12$@"
-        }
+        user_data_2  = self.user_data
+        user_data_2['email'] = 'differentemail@gmail.com'
         response = self.client.post(self.url, user_data_2)
         self.assertEqual(400, response.status_code)
 
@@ -69,7 +54,7 @@ class UserLoginAPIViewTestCase(APITestCase):
     def setUp(self):
         self.username = "ameen"
         self.email = "ameen@gmail.com"
-        self.password = "actual_password"
+        self.password = "strongPassword12$@"
         self.user = User.objects.create_user(self.username, self.email, self.password)
 
     def test_authentication_without_password(self):
@@ -108,7 +93,7 @@ class UserPasswordChangeTestCase(APITestCase):
     def setUp(self):
         self.username = "ameen"
         self.email = "ameen@gmail.com"
-        self.password = "actual_password"
+        self.password = "strongPassword12$@"
         self.user = User.objects.create_user(
             self.username,
             self.email,

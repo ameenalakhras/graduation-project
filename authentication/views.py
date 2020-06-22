@@ -37,8 +37,14 @@ class UserLoginAPIView(GenericAPIView):
         if serializer.is_valid():
             user = serializer.user
             token, _ = Token.objects.get_or_create(user=user)
+            token_data = TokenSerializer(token).data
+            user_group = user.groups.first()
+            # if the user doesn't have any group
+            if user_group is not None:
+                token_data["group"] = {"name": user_group.name}
+
             return Response(
-                data=TokenSerializer(token).data,
+                data=token_data,
                 status=status.HTTP_200_OK,
             )
         else:

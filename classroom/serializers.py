@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from classroom.models import ClassRoom, Comments, Task, Post, ClassRoomTeacher
+from classroom.models import ClassRoom, Comments, Task, Post#, ClassRoomTeacher
 from main.serializers import soft_delete_fields
 
 
@@ -36,7 +36,7 @@ class PostSerializer(serializers.ModelSerializer):
         exclude = soft_delete_fields
 
 
-class ClassRoomTeacherSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ClassRoomTeacher
-        exclude = soft_delete_fields
+# class ClassRoomTeacherSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = ClassRoomTeacher
+#         exclude = soft_delete_fields
