@@ -1,9 +1,17 @@
 from rest_framework import serializers
 
-from classroom.models import ClassRoom, Comments, Task, Post#, ClassRoomTeacher
+from classroom.models import ClassRoom, Comments, Task, Post, Material#, ClassRoomTeacher
 from main.serializers import soft_delete_fields
 
 from authentication.serializers import UserSerializer
+
+
+class MaterialSerializer(serializers.ModelSerializer):
+    uploader = UserSerializer(source="user", read_only=True)
+
+    class Meta:
+        model = Material
+        exclude = soft_delete_fields + ('user', )
 
 
 class CommentsSerializer(serializers.ModelSerializer):
@@ -32,7 +40,7 @@ class ClassRoomSerializer(serializers.ModelSerializer):
     student_objects = UserSerializer(source="students", many=True, read_only=True)
     student_requests_objects = UserSerializer(source="student_requests", many=True, read_only=True)
     posts = PostSerializer(source="class_posts", many=True, read_only=True)
-
+    material = MaterialSerializer(source="classroom_material", many=True, read_only=True)
 
     class Meta:
         model = ClassRoom

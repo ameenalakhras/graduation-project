@@ -48,6 +48,12 @@ class Comments(SoftDeleteModel):
     content = models.TextField()
 
 
+class Material(SoftDeleteModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user_material")
+    classroom = models.ManyToManyField(ClassRoom, related_name="classroom_material", blank=True)
+    file = models.FileField()
+
+
 class Task(SoftDeleteModel):
     average_degree = models.IntegerField(null=True)
     # creator: originally a teacher or an assistant
