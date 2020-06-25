@@ -17,7 +17,7 @@ class ClassRoom(SoftDeleteModel):
     description = models.TextField(null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="teacher_classrooms")
     attachments = models.ManyToManyField(Attachment, blank=True)
-    promo_code = models.CharField(max_length=20, unique=True, null=True)
+    promo_code = models.CharField(max_length=20, unique=True)
     allow_student_participation = models.BooleanField(default=True)
     auto_accept_students = models.BooleanField(default=True)
     archived = models.BooleanField(default=False)
@@ -35,14 +35,14 @@ class ClassRoom(SoftDeleteModel):
 
 
 class Post(SoftDeleteModel):
-    classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE, related_name="class_posts")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user_posts")
     content = models.TextField()
 
 
 class Comments(SoftDeleteModel):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user_comments")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_comments")
     #defaulted as 0 if it was a comment on a post, if it was a reply on a comment it will take the comment id
     parent_id = models.IntegerField(default=0)
     content = models.TextField()
