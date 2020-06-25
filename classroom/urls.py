@@ -8,7 +8,7 @@ from classroom.views import ClassRoomViewSet, CommentViewSet, TaskViewSet, PostV
 basic_actions = {"get": "retrieve", "delete": "destroy", "post": "create"}
 
 urlpatterns = [
-    path('classroom/', ClassRoomViewSet.as_view(actions={"get": "list"}), name="classroom_main"),
+    path('classroom/', ClassRoomViewSet.as_view(actions={"get": "list", "post":"create"}), name="classroom_main"),
     path('classroom/pk/<int:pk>', ClassRoomViewSet.as_view(actions={"get": "retrieve", "delete": "destroy"}), name="classroom_detail"),
     path('classroom/pc/<slug:promo_code>', ClassRoomViewSet.as_view(actions={"post": "enroll"}), name="classroom_enroll"),
     path('comment/', CommentViewSet.as_view(actions=basic_actions), name="comment"),

@@ -12,7 +12,8 @@ from composeexample.permissions import OnlyEnrolled, OwnerDeleteOnly
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer,\
                                   PostSerializer#, ClassRoomTeacherSerializer
 from classroom.models import ClassRoom, Comments, Task, Post#, ClassRoomTeacher
-from composeexample.permissions import OnlyEnrolledWithoutPost, OwnerEditOnly
+from classroom.utils import generate_promo_code
+from composeexample.permissions import OnlyEnrolledWithoutPost, OwnerEditOnly, OnlyTeacherCreates
 
 from django.contrib.auth.models import Group
 
@@ -23,7 +24,7 @@ from rest_framework.permissions import IsAuthenticated
 class ClassRoomViewSet(viewsets.ModelViewSet):
     queryset = ClassRoom.objects.filter(deleted=False)
     serializer_class = ClassRoomSerializer
-    permission_classes = [IsAuthenticated, OnlyEnrolledWithoutPost]
+    permission_classes = [IsAuthenticated, OnlyEnrolledWithoutPost, OnlyTeacherCreates]
 
     def list(self, request, *args, **kwargs):
         teachers_group = Group.objects.get(name="teachers")
@@ -85,7 +86,6 @@ class ClassRoomViewSet(viewsets.ModelViewSet):
                 obj = queryset.get(promo_code=promo_code)
                 if self.requester_inside_class(request, obj):
                     # it will return the class info
-                    import ipdb;ipdb.set_trace()
                     return HttpResponseRedirect(reverse("classroom_detail", kwargs={"pk": obj.id}))
 
                 else:
@@ -106,6 +106,15 @@ class ClassRoomViewSet(viewsets.ModelViewSet):
                     {"message": "class not found"},
                     status=status.HTTP_404_NOT_FOUND
                 )
+
+    def create(self, request, *args, **kwargs):
+        promo_code = generate_promo_code(length=10)
+        user = self.request.user
+        request.data._mutable = True
+        request.data["promo_code"] = promo_code
+        request.data["user"] = user
+        request.data._mutable = False
+        super(ClassRoomViewSet, self).retrieve(self, request, *args, **kwargs)
 
 
 class CommentViewSet(viewsets.ModelViewSet):

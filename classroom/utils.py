@@ -1,7 +1,7 @@
 from django.conf import settings
 
 from main.utils import generate_string_random_id, get_full_user_path
-
+import uuid
 
 def get_classroom_logo_path(instance, filename):
     """return the avatar classroom logo image path"""
@@ -23,3 +23,8 @@ def default_class_logo_img():
 
 def default_class_background_img():
     return 'https://3.bp.blogspot.com/-3OZFSKvugss/VzH53PuahJI/AAAAAAAABdc/rGczv9JzFFUH1wBMx7gTtJBNl44GjaeQwCLcB/s1600/desain%2Bbackground%2Bpermainan%2Bwarna%2B6.jpg'
+
+
+def generate_promo_code(length=7):
+    promo_code = str(uuid.uuid4())
+    return promo_code[:7]
