@@ -51,3 +51,20 @@ class OnlyEnrolledWithoutPost(permissions.BasePermission):
             return True
         else:
             return (request.user in obj.students.all()) or (request.user == obj.user)
+
+
+class OnlyTeacherCreates(permissions.BasePermission):
+    """
+    a permission class for the classroom ViewSet
+    it makes sure to allow only the user involved in the classroom to request anything from it
+    except the post requests
+    """
+
+    def has_object_permission(self, request, view, obj):
+        # Read permissions are allowed to any request,
+        # so we'll always allow GET, HEAD or OPTIONS requests.
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # obj here is a UserProfile instance
+        return request.user.groups.filter(name="teachers").exists()

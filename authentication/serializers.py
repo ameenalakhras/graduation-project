@@ -11,6 +11,12 @@ from rest_framework.authtoken.models import Token
 from authentication.models import User
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["username", "first_name", "last_name"]
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
