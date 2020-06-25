@@ -7,11 +7,14 @@ from authentication.serializers import UserSerializer
 
 
 class MaterialSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
     uploader = UserSerializer(source="user", read_only=True)
 
     class Meta:
         model = Material
-        exclude = soft_delete_fields + ('user', )
+        exclude = soft_delete_fields
 
 
 class CommentsSerializer(serializers.ModelSerializer):

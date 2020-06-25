@@ -10,8 +10,8 @@ from django.http import HttpResponseRedirect
 from composeexample.permissions import OnlyEnrolled, OwnerDeleteOnly
 
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer,\
-                                  PostSerializer#, ClassRoomTeacherSerializer
-from classroom.models import ClassRoom, Comments, Task, Post#, ClassRoomTeacher
+                                  PostSerializer, MaterialSerializer#, ClassRoomTeacherSerializer
+from classroom.models import ClassRoom, Comments, Task, Post, Material#, ClassRoomTeacher
 from classroom.utils import generate_promo_code
 from composeexample.permissions import OnlyEnrolledWithoutPost, OwnerEditOnly, OnlyTeacherCreates
 
@@ -133,6 +133,12 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.filter(deleted=False)
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated, OwnerEditOnly]
+
+
+class MaterialViewSet(viewsets.ModelViewSet):
+    queryset = Material.objects.filter(deleted=False)
+    serializer_class = MaterialSerializer
+    permission_classes = [IsAuthenticated, OnlyTeacherCreates]
 
 #
 # class ClassRoomTeacherViewSet(viewsets.ModelViewSet):
