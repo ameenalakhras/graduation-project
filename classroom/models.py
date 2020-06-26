@@ -11,9 +11,15 @@ from classroom.utils import default_class_logo_img, default_class_background_img
 
 class ClassRoom(SoftDeleteModel):
     title = models.CharField(max_length=50)
-    logo_img = models.ImageField(upload_to=get_classroom_logo_path, storage=get_storage(), null=True, default=default_class_logo_img())
-    background_img = models.ImageField(upload_to=get_classroom_bg_path, storage=get_storage(), null=True, default=default_class_background_img())
-
+    logo_img = models.ImageField(
+                                upload_to=get_classroom_logo_path,
+                                storage=get_storage(), null=True,
+                                default=default_class_logo_img()
+    )
+    background_img = models.ImageField(
+                                    upload_to=get_classroom_bg_path, storage=get_storage(),
+                                    null=True, default=default_class_background_img()
+    )
     description = models.TextField(null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="teacher_classrooms")
     attachments = models.ManyToManyField(Attachment, blank=True)
@@ -23,15 +29,6 @@ class ClassRoom(SoftDeleteModel):
     archived = models.BooleanField(default=False)
     students = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="student_classrooms", blank=True)
     student_requests = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="classroom_request", blank=True)
-
-# class ClassRoomStudent(SoftDeleteModel):
-#     classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE, related_name="classroom_students")
-#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="student_class")
-
-
-# class ClassRoomTeacher(SoftDeleteModel):
-#     classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
-#     user = models.ManyToManyField(settings.AUTH_USER_MODEL)
 
 
 class Post(SoftDeleteModel):
@@ -43,7 +40,7 @@ class Post(SoftDeleteModel):
 class Comments(SoftDeleteModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user_comments")
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post_comments")
-    #defaulted as 0 if it was a comment on a post, if it was a reply on a comment it will take the comment id
+    # defaulted as 0 if it was a comment on a post, if it was a reply on a comment it will take the comment id
     parent_id = models.IntegerField(default=0)
     content = models.TextField()
 
@@ -63,7 +60,7 @@ class Task(SoftDeleteModel):
     attachments = models.ManyToManyField(Attachment, blank=True)
 
 
-class TaskSOlutionInfo(SoftDeleteModel):
+class TaskSolutionInfo(SoftDeleteModel):
     attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE)
     notes = models.CharField(max_length=300, null=True)
     accepted = models.BooleanField(null=True)

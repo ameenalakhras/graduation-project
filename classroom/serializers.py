@@ -50,17 +50,9 @@ class ClassRoomSerializer(serializers.ModelSerializer):
         exclude = soft_delete_fields + ("students", "student_requests")
 
 
-
 # the task serializer should make sure it's a teacher who is making the task
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         exclude = soft_delete_fields
 
-
-
-
-# class ClassRoomTeacherSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = ClassRoomTeacher
-#         exclude = soft_delete_fields

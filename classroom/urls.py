@@ -1,9 +1,6 @@
-# from rest_framework import routers
 from django.urls import path
 
 from classroom.views import ClassRoomViewSet, CommentViewSet, TaskViewSet, PostViewSet, MaterialViewSet#, ClassRoomTeacherViewSet
-
-# router = routers.DefaultRouter()
 
 basic_actions = {"get": "retrieve", "delete": "destroy", "post": "create"}
 retrieve_destroy = {"get": "retrieve", "delete": "destroy"}
@@ -18,14 +15,3 @@ urlpatterns = [
     path('material/', MaterialViewSet.as_view(actions={"post": "create"}), name="material"),
     path('material/<pk>/', MaterialViewSet.as_view(actions=retrieve_destroy), name="material"),
 ]
-
-#
-# router.register('classroom', ClassRoomViewSet)
-# router.register('comment', CommentViewSet)
-# router.register('task', TaskViewSet)
-# router.register('post', PostViewSet)
-# # router.register('classroomteacher', ClassRoomTeacherViewSet)
-# # router.register('profile', UserProfileViewSet)
-# # router.register('permission', PermissionViewSet)
-#
-# urlpatterns = router.urls

@@ -1,24 +1,18 @@
 # from django.http import HttpResponse
 from rest_framework.response import Response
-
-from rest_framework import status
-from django.urls import reverse, reverse_lazy
-
-from django.http import HttpResponseRedirect
-
-
-from composeexample.permissions import OnlyEnrolled, OwnerDeleteOnly
-
-from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer,\
-                                  PostSerializer, MaterialSerializer#, ClassRoomTeacherSerializer
-from classroom.models import ClassRoom, Comments, Task, Post, Material#, ClassRoomTeacher
-from classroom.utils import generate_promo_code
-from composeexample.permissions import OnlyEnrolledWithoutPost, OwnerEditOnly, OnlyTeacherCreates
-
-from django.contrib.auth.models import Group
-
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+
+from django.urls import reverse
+from django.contrib.auth.models import Group
+from django.http import HttpResponseRedirect
+
+from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer,\
+                                  PostSerializer, MaterialSerializer
+from classroom.models import ClassRoom, Comments, Task, Post, Material
+from classroom.utils import generate_promo_code
+from composeexample.permissions import OnlyEnrolledWithoutPost, OwnerEditOnly, OnlyTeacherCreates
 
 
 class ClassRoomViewSet(viewsets.ModelViewSet):
@@ -140,9 +134,3 @@ class MaterialViewSet(viewsets.ModelViewSet):
     serializer_class = MaterialSerializer
     permission_classes = [IsAuthenticated, OnlyTeacherCreates]
 
-#
-# class ClassRoomTeacherViewSet(viewsets.ModelViewSet):
-#     queryset = ClassRoomTeacher.objects.filter(deleted=False)
-#     serializer_class = ClassRoomTeacherSerializer
-#     permission_classes = [IsAuthenticated]
-#     http_method_names = ['get','head', 'patch']
