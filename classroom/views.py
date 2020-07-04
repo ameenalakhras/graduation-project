@@ -85,6 +85,7 @@ class ClassRoomViewSet(viewsets.ModelViewSet):
 
                 else:
                     auto_accept_students = obj.auto_accept_students
+                    self.get_object().students.add(request.user)
                     if auto_accept_students:
                         return Response(
                             {"message": "you're now enrolled to the class"},
