@@ -12,14 +12,14 @@ from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskS
     PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, PutMaterialSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material
 from classroom.utils import generate_promo_code
-from composeexample.permissions import OnlyEnrolledWithoutPost, OwnerEditOnly, OnlyTeacherCreates, \
+from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
     OnlyEnrolled
 
 
 class ClassRoomViewSet(viewsets.ModelViewSet):
     queryset = ClassRoom.objects.filter(deleted=False)
     serializer_class = ClassRoomSerializer
-    permission_classes = [IsAuthenticated, OnlyEnrolledWithoutPost, OnlyTeacherCreates]
+    permission_classes = [IsAuthenticated, OnlyEnrolled, OnlyTeacherCreates]
 
     def list(self, request, *args, **kwargs):
         teachers_group = Group.objects.get(name="teachers")
@@ -109,7 +109,7 @@ class ClassRoomViewSet(viewsets.ModelViewSet):
         request.data["promo_code"] = promo_code
         request.data["user"] = user
         request.data._mutable = False
-        super(ClassRoomViewSet, self).retrieve(self, request, *args, **kwargs)
+        super(ClassRoomViewSet, self).create(self, request, *args, **kwargs)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
