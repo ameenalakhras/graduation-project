@@ -93,8 +93,8 @@ class ClassRoomViewSet(ClassRoomViewSetRoot):
 
                 else:
                     auto_accept_students = obj.auto_accept_students
-                    obj.students.add(request.user)
                     if auto_accept_students:
+                        obj.students.add(request.user)
                         return Response(
                             {"message": "you're now enrolled to the class"},
                             status=status.HTTP_200_OK
