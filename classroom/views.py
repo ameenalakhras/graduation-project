@@ -16,7 +16,7 @@ from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
     OnlyEnrolled
 
 
-class ClassRoomViewSet(viewsets.ModelViewSet):
+class ClassRoomViewSetRoot(viewsets.ModelViewSet):
     queryset = ClassRoom.objects.filter(deleted=False)
     serializer_class = ClassRoomSerializer
     permission_classes = [IsAuthenticated, OnlyEnrolled, OnlyTeacherCreates]
@@ -40,6 +40,19 @@ class ClassRoomViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+    def create(self, request, *args, **kwargs):
+        promo_code = generate_promo_code(length=10)
+        user = self.request.user
+        request.data._mutable = True
+        request.data["promo_code"] = promo_code
+        request.data["user"] = user
+        request.data._mutable = False
+        super(ClassRoomViewSet, self).create(self, request, *args, **kwargs)
+
+
+class ClassRoomViewSet(ClassRoomViewSetRoot):
+    permission_classes = [IsAuthenticated, OnlyEnrolled]
+
     def destroy(self, request, *args, **kwargs):
         # if the request is coming from the owner of the classroom
         owner_request = (request.user == self.get_object().user)
@@ -52,15 +65,9 @@ class ClassRoomViewSet(viewsets.ModelViewSet):
 
             self.get_object().students.remove(request.user)
             return Response(
-                {"message": "ther user was removed from the classroom"}
+                {"message": "the user was removed from the classroom"}
                 ,status=status.HTTP_200_OK
             )
-
-    def requester_inside_class(self, request, obj=None, *args, **kwargs):
-        """
-        check if the requester user is inside of the classroom or not
-        """
-        return (request.user in obj.students.all()) or (request.user == obj.user)
 
     def enroll(self, request,  *args, **kwargs):
         """
@@ -79,20 +86,21 @@ class ClassRoomViewSet(viewsets.ModelViewSet):
             promo_code_exists = queryset.filter(promo_code=promo_code).exists()
             if promo_code_exists:
                 obj = queryset.get(promo_code=promo_code)
-                if self.requester_inside_class(request, obj):
+                user_enrolled = OnlyEnrolled().has_object_permission(request, view=self, obj=obj)
+                if user_enrolled:
                     # it will return the class info
                     return HttpResponseRedirect(reverse("classroom_detail", kwargs={"pk": obj.id}))
 
                 else:
                     auto_accept_students = obj.auto_accept_students
-                    self.get_object().students.add(request.user)
+                    obj.students.add(request.user)
                     if auto_accept_students:
                         return Response(
                             {"message": "you're now enrolled to the class"},
                             status=status.HTTP_200_OK
                         )
                     else:
-                        self.get_object().student_requests.add(request.user)
+                        obj.student_requests.add(request.user)
                         return Response(
                             {"message": "your request has been sent"},
                             status=status.HTTP_200_OK
@@ -102,15 +110,6 @@ class ClassRoomViewSet(viewsets.ModelViewSet):
                     {"message": "class not found"},
                     status=status.HTTP_404_NOT_FOUND
                 )
-
-    def create(self, request, *args, **kwargs):
-        promo_code = generate_promo_code(length=10)
-        user = self.request.user
-        request.data._mutable = True
-        request.data["promo_code"] = promo_code
-        request.data["user"] = user
-        request.data._mutable = False
-        super(ClassRoomViewSet, self).create(self, request, *args, **kwargs)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
