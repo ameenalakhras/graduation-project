@@ -14,7 +14,27 @@ class MaterialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Material
-        exclude = soft_delete_fields
+        exclude = soft_delete_fields + ("classroom", "id")
+
+
+class ClassroomMaterialSerializer(MaterialSerializer):
+    """
+    the same material serializer but this one is for create requests, it doesn't exclude the classroom
+    since it is saved in the database in the create request.
+    """
+    class Meta:
+        model = Material
+        exclude = soft_delete_fields + ("id", )
+
+
+class PutMaterialSerializer(MaterialSerializer):
+    """
+    the same material serializer but this one is for edit requests (put), it excludes the user
+    since changing him will change the authority for the material owner himself.
+    """
+    class Meta:
+        model = Material
+        fields = ("file", )
 
 
 class CommentsSerializer(serializers.ModelSerializer):
@@ -50,17 +70,9 @@ class ClassRoomSerializer(serializers.ModelSerializer):
         exclude = soft_delete_fields + ("students", "student_requests")
 
 
-
 # the task serializer should make sure it's a teacher who is making the task
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         exclude = soft_delete_fields
 
-
-
-
-# class ClassRoomTeacherSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = ClassRoomTeacher
-#         exclude = soft_delete_fields

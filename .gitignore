@@ -9,3 +9,4 @@ postgres/
 venv/
 /db.sqlite3
 mediafiles/
+notes.txt

@@ -1,7 +1,6 @@
-from django.conf import settings
-
 from main.utils import generate_string_random_id, get_full_user_path
 import uuid
+
 
 def get_classroom_logo_path(instance, filename):
     """return the avatar classroom logo image path"""
