@@ -13,7 +13,7 @@ from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskS
 from classroom.models import ClassRoom, Comments, Task, Post, Material
 from classroom.utils import generate_promo_code
 from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
-    OnlyEnrolled
+    OnlyEnrolled, OwnerDeleteOnly
 
 
 class ClassRoomViewSetRoot(viewsets.ModelViewSet):
@@ -47,10 +47,12 @@ class ClassRoomViewSetRoot(viewsets.ModelViewSet):
         request.data["promo_code"] = promo_code
         request.data["user"] = user
         request.data._mutable = False
-        super(ClassRoomViewSet, self).create(self, request, *args, **kwargs)
+        return super().create(request, *args, **kwargs)
 
 
 class ClassRoomViewSet(ClassRoomViewSetRoot):
+    # OnlyEnrolled doesn't work on Post requests ( because its function is has_object_permission)
+    # so it won't work on enroll function and it will only work on destroy function
     permission_classes = [IsAuthenticated, OnlyEnrolled]
 
     def destroy(self, request, *args, **kwargs):
@@ -59,7 +61,7 @@ class ClassRoomViewSet(ClassRoomViewSetRoot):
         if owner_request:
             return super().destroy(request)
         # if the user is one of the students
-        # NOTICE: i don't check for the requests where the requester isn't a student
+        # NOTICE: i don't check for the requests where the requester isn't enrolled
         # because it is covered by "onlyEnrolled" permission class
         else:
 
@@ -137,7 +139,16 @@ class MaterialViewSet(viewsets.ModelViewSet):
 
     def check_classroom_exists(self, classroom_id):
         classroom_exists = self.get_queryset().filter(classroom=classroom_id).exists()
-        return classroom_exists
+        if classroom_exists:
+            check_status = True
+            exception_response = None
+        else:
+            check_status = False
+            exception_response = Response(
+                data={"message": "classroom doesn't exist"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        return check_status, exception_response
 
     def check_user_enrolled(self, request, classroom_pk, *args, **kwargs):
         """
@@ -160,8 +171,8 @@ class MaterialViewSet(viewsets.ModelViewSet):
 
     def list_classroom_material(self, request,  *args, **kwargs):
         classroom_pk = self.kwargs["classroom_pk"]
-
-        if self.check_classroom_exists(classroom_pk):
+        check_status, exception_response = self.check_classroom_exists(classroom_pk)
+        if check_status:
             check_status, exception_response = self.check_user_enrolled(request, classroom_pk)
             if check_status:
                 self.queryset = self.get_queryset().filter(classroom=classroom_pk)
@@ -169,10 +180,7 @@ class MaterialViewSet(viewsets.ModelViewSet):
             else:
                 return exception_response
         else:
-            return Response(
-                data={"message": "classroom doesn't exist"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return exception_response
 
     def create_classroom_material(self, request,  *args, **kwargs):
         # if the user isn't the teacher of the classroom_pk, he can't create the material
@@ -202,3 +210,16 @@ class MaterialViewSet(viewsets.ModelViewSet):
     def partial_update(self, request,  *args, **kwargs):
         self.serializer_class = PutMaterialSerializer
         return super(MaterialViewSet, self).partial_update(request)
+
+    def retrieve(self, request, *args, **kwargs):
+        classroom_pk = self.kwargs["classroom_pk"]
+        classroom_exists, exception_response = self.check_classroom_exists(classroom_pk)
+        if classroom_exists:
+            user_enrolled, exception_response = self.check_user_enrolled(request, classroom_pk)
+            if user_enrolled:
+                self.queryset = self.get_queryset().filter(classroom=classroom_pk)
+                return super(MaterialViewSet, self).retrieve(request)
+            else:
+                return exception_response
+        else:
+            return exception_response
