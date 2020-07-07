@@ -138,7 +138,7 @@ class MaterialViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, OnlyTeacherCreates]
 
     def check_classroom_exists(self, classroom_id):
-        classroom_exists = self.get_queryset().filter(classroom=classroom_id).exists()
+        classroom_exists = ClassRoom.objects.filter(id=classroom_id).exists()
         if classroom_exists:
             check_status = True
             exception_response = None
@@ -171,41 +171,41 @@ class MaterialViewSet(viewsets.ModelViewSet):
 
     def list_classroom_material(self, request,  *args, **kwargs):
         classroom_pk = self.kwargs["classroom_pk"]
-        check_status, exception_response = self.check_classroom_exists(classroom_pk)
-        if check_status:
-            check_status, exception_response = self.check_user_enrolled(request, classroom_pk)
-            if check_status:
+        classroom_exists, exists_exception_response = self.check_classroom_exists(classroom_pk)
+        if classroom_exists:
+            user_enrolled, enrolled_exception_response = self.check_user_enrolled(request, classroom_pk)
+            if user_enrolled:
                 self.queryset = self.get_queryset().filter(classroom=classroom_pk)
                 return super(MaterialViewSet, self).list(request)
             else:
-                return exception_response
+                return enrolled_exception_response
         else:
-            return exception_response
+            return exists_exception_response
 
     def create_classroom_material(self, request,  *args, **kwargs):
         # if the user isn't the teacher of the classroom_pk, he can't create the material
         classroom_pk = self.kwargs["classroom_pk"]
 
-        if self.check_classroom_exists(classroom_pk):
+        classroom_exists, exists_exception_response = self.check_classroom_exists(classroom_pk)
+
+        if classroom_exists:
 
             classroom = ClassRoom.objects.get(id=classroom_pk)
+            # check if the request isn't from another teacher outside of the classroom
             if classroom.user == request.user:
                 request.data._mutable = True
                 request.data["classroom"] = classroom_pk
                 request.data._mutable = False
                 self.serializer_class = ClassroomMaterialSerializer
 
-                return super(MaterialViewSet, self).create(request)
+                return super().create(request)
             else:
                 return Response(
                     data={"message": "only the classroom teacher can create material inside it"},
                     status=status.HTTP_401_UNAUTHORIZED
                 )
         else:
-            return Response(
-                data={"message": "classroom doesn't exist"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return exists_exception_response
 
     def partial_update(self, request,  *args, **kwargs):
         self.serializer_class = PutMaterialSerializer
@@ -213,13 +213,13 @@ class MaterialViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         classroom_pk = self.kwargs["classroom_pk"]
-        classroom_exists, exception_response = self.check_classroom_exists(classroom_pk)
+        classroom_exists, exists_exception_response = self.check_classroom_exists(classroom_pk)
         if classroom_exists:
-            user_enrolled, exception_response = self.check_user_enrolled(request, classroom_pk)
+            user_enrolled, enrolled_exception_response = self.check_user_enrolled(request, classroom_pk)
             if user_enrolled:
                 self.queryset = self.get_queryset().filter(classroom=classroom_pk)
                 return super(MaterialViewSet, self).retrieve(request)
             else:
-                return exception_response
+                return enrolled_exception_response
         else:
-            return exception_response
+            return exists_exception_response
