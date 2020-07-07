@@ -14,7 +14,7 @@ from classroom.models import ClassRoom, Comments, Task, Post, Material
 from classroom.utils import generate_promo_code
 from classroom.views_utils import check_user_enrolled, check_classroom_exists
 from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
-    OnlyEnrolled, OwnerDeleteOnly
+    OnlyEnrolled, OwnerOnlyDeletesAndEdits
 
 
 class ClassRoomViewSetRoot(viewsets.ModelViewSet):
@@ -54,7 +54,7 @@ class ClassRoomViewSetRoot(viewsets.ModelViewSet):
 class ClassRoomViewSet(ClassRoomViewSetRoot):
     # OnlyEnrolled doesn't work on Post requests ( because its function is has_object_permission)
     # so it won't work on enroll function and it will only work on destroy function
-    permission_classes = [IsAuthenticated, OnlyEnrolled]
+    permission_classes = [IsAuthenticated, OnlyEnrolled, OwnerEditOnly]
 
     def destroy(self, request, *args, **kwargs):
         # if the request is coming from the owner of the classroom
@@ -124,7 +124,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.filter(deleted=False)
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated, OwnerEditOnly]
+    permission_classes = [IsAuthenticated, OwnerEditOnly, OwnerOnlyDeletesAndEdits]
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -136,7 +136,7 @@ class PostViewSet(viewsets.ModelViewSet):
 class MaterialViewSet(viewsets.ModelViewSet):
     queryset = Material.objects.filter(deleted=False)
     serializer_class = MaterialSerializer
-    permission_classes = [IsAuthenticated, OnlyTeacherCreates]
+    permission_classes = [IsAuthenticated, OnlyTeacherCreates, OwnerOnlyDeletesAndEdits]
 
     def list_classroom_material(self, request,  *args, **kwargs):
         classroom_pk = self.kwargs["classroom_pk"]

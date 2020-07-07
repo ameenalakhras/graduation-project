@@ -14,11 +14,13 @@ class ClassRoom(SoftDeleteModel):
     logo_img = models.ImageField(
                                 upload_to=get_classroom_logo_path,
                                 storage=get_storage(), null=True,
-                                default=default_class_logo_img()
+                                default=default_class_logo_img(),
+                                max_length=1000
     )
     background_img = models.ImageField(
                                     upload_to=get_classroom_bg_path, storage=get_storage(),
-                                    null=True, default=default_class_background_img()
+                                    null=True, default=default_class_background_img(),
+                                    max_length=1000
     )
     description = models.TextField(null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="teacher_classrooms")
@@ -48,7 +50,7 @@ class Comments(SoftDeleteModel):
 class Material(SoftDeleteModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user_material")
     classroom = models.ManyToManyField(ClassRoom, related_name="classroom_material", blank=True)
-    file = models.FileField()
+    file = models.FileField(max_length=1000)
 
 
 class Task(SoftDeleteModel):
