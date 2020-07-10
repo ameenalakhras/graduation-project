@@ -14,7 +14,7 @@ from classroom.models import ClassRoom, Comments, Task, Post, Material
 from classroom.utils import generate_promo_code
 from classroom.views_utils import check_user_enrolled, check_classroom_exists
 from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
-    OnlyEnrolled, OwnerOnlyDeletesAndEdits
+    OnlyEnrolled, OwnerOnlyDeletesAndEdits, OnlyEnrolledRelated, OwnerAndTeacherDeleteOnly
 
 
 class ClassRoomViewSetRoot(viewsets.ModelViewSet):
@@ -127,10 +127,16 @@ class TaskViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, OwnerEditOnly, OwnerOnlyDeletesAndEdits]
 
 
-class PostViewSet(viewsets.ModelViewSet):
+class PostViewSetRoot(viewsets.ModelViewSet):
     queryset = Post.objects.filter(deleted=False)
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated, OwnerEditOnly]
+    permission_classes = [IsAuthenticated, OwnerEditOnly, OnlyEnrolledRelated]
+
+
+class PostViewSet(PostViewSetRoot):
+    queryset = Post.objects.filter(deleted=False)
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated, OwnerEditOnly, OnlyEnrolledRelated, OwnerAndTeacherDeleteOnly]
 
 
 class MaterialViewSet(viewsets.ModelViewSet):

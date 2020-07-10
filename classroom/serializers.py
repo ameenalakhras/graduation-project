@@ -50,6 +50,9 @@ class CommentsSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     comments = CommentsSerializer(source="post_comments", many=True, read_only=True)
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
 
     class Meta:
         model = Post

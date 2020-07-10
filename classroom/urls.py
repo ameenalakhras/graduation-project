@@ -1,7 +1,7 @@
 from django.urls import path
 
 from classroom.views import ClassRoomViewSet, CommentViewSet, TaskViewSet, PostViewSet, MaterialViewSet, \
-    ClassRoomViewSetRoot
+    ClassRoomViewSetRoot, PostViewSetRoot
 list_create = {"get": "list", "post": "create"}
 all_actions = {"get": "retrieve", "delete": "destroy", "post": "create", "put": "partial_update"}
 basic_actions = {"get": "retrieve", "delete": "destroy", "post": "create"}
@@ -27,5 +27,9 @@ urlpatterns = [
 
     path('comment/', CommentViewSet.as_view(actions=basic_actions), name="comment"),
     path('task/', TaskViewSet.as_view(actions=basic_actions), name="task"),
-    path('post', PostViewSet.as_view(actions=basic_actions), name="post"),
+    path('post/', PostViewSetRoot.as_view(actions={"post": "create"}), name="post"),
+    path('post/<int:pk>/', PostViewSet.as_view(
+        actions={"get": "retrieve", "delete": "destroy", "put": "partial_update"}),
+         name="post"
+         ),
 ]
