@@ -12,7 +12,7 @@ from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskS
     PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, PutMaterialSerializer, CommentsUpdateSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material
 from classroom.utils import generate_promo_code
-from classroom.views_utils import check_user_enrolled, check_classroom_exists
+from classroom.views_utils import check_user_enrolled, check_classroom_exists, check_classroom_owner
 from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
     OnlyEnrolled, OwnerOnlyDeletesAndEdits, OnlyEnrolledRelated, OwnerAndTeacherDeleteOnly
 
@@ -129,12 +129,12 @@ class CommentViewSet(viewsets.ModelViewSet):
         return serializer_class
 
     def create(self, request, *args, **kwargs):
-        post_pk = kwargs["post"]
+        post_pk = kwargs["pk"]
         post = Post.objects.get(id=post_pk)
         enrolled_in_classroom = OnlyEnrolledRelated().has_object_permission(request, post, post)
         if enrolled_in_classroom:
             request.data._mutable = True
-            request.data["post"] = post_pk
+            request.data["pk"] = post_pk
             request.data._mutable = False
             return super().create(request, *args, **kwargs)
         else:
@@ -155,7 +155,11 @@ class TaskViewSet(viewsets.ModelViewSet):
 class PostViewSetRoot(viewsets.ModelViewSet):
     queryset = Post.objects.filter(deleted=False)
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated, OwnerEditOnly, OnlyEnrolledRelated]
+    permission_classes = [IsAuthenticated, OwnerEditOnly]
+
+    @check_user_enrolled
+    def create(self, request, *args, **kwargs):
+        super(PostViewSetRoot, self).create()
 
 
 class PostViewSet(PostViewSetRoot):
@@ -177,23 +181,14 @@ class MaterialViewSetRoot(viewsets.ModelViewSet):
         return super(MaterialViewSetRoot, self).list(request)
 
     @check_classroom_exists
+    @check_classroom_owner
     def create_classroom_material(self, request,  *args, **kwargs):
-        # if the user isn't the teacher of the classroom_pk, he can't create the material
         classroom_pk = kwargs["pk"]
-        classroom = ClassRoom.objects.get(id=classroom_pk)
-        # check if the request isn't from another teacher outside of the classroom
-        if classroom.user == request.user:
-            request.data._mutable = True
-            request.data["classroom"] = classroom_pk
-            request.data._mutable = False
-            self.serializer_class = ClassroomMaterialSerializer
-
-            return super().create(request)
-        else:
-            return Response(
-                data={"message": "only the classroom teacher can create material inside it"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+        request.data._mutable = True
+        request.data["classroom"] = classroom_pk
+        request.data._mutable = False
+        self.serializer_class = ClassroomMaterialSerializer
+        return super().create(request)
 
 
 class MaterialViewSet(viewsets.ModelViewSet):

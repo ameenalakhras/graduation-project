@@ -25,7 +25,7 @@ urlpatterns = [
          ClassRoomViewSet.as_view(actions={"post": "enroll"}), name="classroom_enroll"
          ),
 
-    path('posts/<int:post>/comments/', CommentViewSet.as_view(
+    path('posts/<int:pk>/comments/', CommentViewSet.as_view(
         actions={"post": "create"}),
          name="comment"
          ),
