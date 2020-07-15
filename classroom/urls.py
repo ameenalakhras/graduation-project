@@ -25,7 +25,14 @@ urlpatterns = [
          ClassRoomViewSet.as_view(actions={"post": "enroll"}), name="classroom_enroll"
          ),
 
-    path('comment/', CommentViewSet.as_view(actions=basic_actions), name="comment"),
+    path('post/<int:post>/comments/', CommentViewSet.as_view(
+        actions={"post": "create"}),
+         name="comment"
+         ),
+    path('comments/<int:pk>/', CommentViewSet.as_view(
+        actions={"delete": "destroy", "put": "partial_update"}),
+         name="comment"
+         ),
     path('task/', TaskViewSet.as_view(actions=basic_actions), name="task"),
     path('post/', PostViewSetRoot.as_view(actions={"post": "create"}), name="post"),
     path('post/<int:pk>/', PostViewSet.as_view(

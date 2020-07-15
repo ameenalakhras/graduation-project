@@ -9,7 +9,7 @@ from django.contrib.auth.models import Group
 from django.http import HttpResponseRedirect
 
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer, \
-    PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, PutMaterialSerializer
+    PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, PutMaterialSerializer, CommentsUpdateSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material
 from classroom.utils import generate_promo_code
 from classroom.views_utils import check_user_enrolled, check_classroom_exists
@@ -118,7 +118,32 @@ class ClassRoomViewSet(ClassRoomViewSetRoot):
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comments.objects.filter(deleted=False)
     serializer_class = CommentsSerializer
-    permission_classes = [IsAuthenticated, OwnerEditOnly]
+    permission_classes = [IsAuthenticated, OwnerOnlyDeletesAndEdits]
+
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+
+        if self.request.method == 'PUT':
+            serializer_class = CommentsUpdateSerializer
+
+        return serializer_class
+
+    def create(self, request, *args, **kwargs):
+        post_pk = kwargs["post"]
+        post = Post.objects.get(id=post_pk)
+        enrolled_in_classroom = OnlyEnrolledRelated().has_object_permission(request, post, post)
+        if enrolled_in_classroom:
+            request.data._mutable = True
+            request.data["post"] = post_pk
+            request.data._mutable = False
+            return super().create(request, *args, **kwargs)
+        else:
+            # replace this with a class for this sentence (it exists in django rest somewhere as
+            # forbidden permission message
+            return Response(
+                data={"detail": "You do not have permission to perform this action."},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
 
 class TaskViewSet(viewsets.ModelViewSet):

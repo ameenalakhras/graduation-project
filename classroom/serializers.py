@@ -48,6 +48,13 @@ class CommentsSerializer(serializers.ModelSerializer):
         exclude = soft_delete_fields
 
 
+class CommentsUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comments
+        fields = ('content', )
+
+
 class PostSerializer(serializers.ModelSerializer):
     comments = CommentsSerializer(source="post_comments", many=True, read_only=True)
     user = serializers.HiddenField(
