@@ -66,6 +66,13 @@ class PostSerializer(serializers.ModelSerializer):
         exclude = soft_delete_fields
 
 
+class PostUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Post
+        fields = ("content", )
+
+
 class ClassRoomSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),

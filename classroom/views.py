@@ -9,7 +9,8 @@ from django.contrib.auth.models import Group
 from django.http import HttpResponseRedirect
 
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer, \
-    PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, PutMaterialSerializer, CommentsUpdateSerializer
+    PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, PutMaterialSerializer, CommentsUpdateSerializer, \
+    PostUpdateSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material
 from classroom.utils import generate_promo_code
 from classroom.views_utils import check_user_enrolled, check_classroom_exists, check_classroom_owner
@@ -134,7 +135,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         enrolled_in_classroom = OnlyEnrolledRelated().has_object_permission(request, post, post)
         if enrolled_in_classroom:
             request.data._mutable = True
-            request.data["pk"] = post_pk
+            request.data["post"] = post_pk
             request.data._mutable = False
             return super().create(request, *args, **kwargs)
         else:
@@ -159,13 +160,25 @@ class PostViewSetRoot(viewsets.ModelViewSet):
 
     @check_user_enrolled
     def create(self, request, *args, **kwargs):
-        super(PostViewSetRoot, self).create()
+        classroom_pk = kwargs.get("pk", None)
+        request.data._mutable = True
+        request.data["classroom"] = classroom_pk
+        request.data._mutable = False
+        return super(PostViewSetRoot, self).create(request, *args, **kwargs)
 
 
 class PostViewSet(PostViewSetRoot):
     queryset = Post.objects.filter(deleted=False)
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated, OwnerEditOnly, OnlyEnrolledRelated, OwnerAndTeacherDeleteOnly]
+
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+
+        if self.request.method == 'PUT':
+            serializer_class = PostUpdateSerializer
+
+        return serializer_class
 
 
 class MaterialViewSetRoot(viewsets.ModelViewSet):
@@ -178,7 +191,7 @@ class MaterialViewSetRoot(viewsets.ModelViewSet):
     def list_classroom_material(self, request,  *args, **kwargs):
         classroom_pk = self.kwargs["pk"]
         self.queryset = self.get_queryset().filter(classroom=classroom_pk)
-        return super(MaterialViewSetRoot, self).list(request)
+        return super(MaterialViewSetRoot, self).list(request, *args, **kwargs)
 
     @check_classroom_exists
     @check_classroom_owner
@@ -202,11 +215,11 @@ class MaterialViewSet(viewsets.ModelViewSet):
     @check_user_enrolled
     def partial_update(self, request,  *args, **kwargs):
         self.serializer_class = PutMaterialSerializer
-        return super(MaterialViewSet, self).partial_update(request)
+        return super(MaterialViewSet, self).partial_update(request, *args, **kwargs)
 
     @check_user_enrolled
     def retrieve(self, request, *args, **kwargs):
         classroom_pk = self.kwargs["classroom_pk"]
         self.queryset = self.get_queryset().filter(classroom=classroom_pk)
-        return super(MaterialViewSet, self).retrieve(request)
+        return super(MaterialViewSet, self).retrieve(request, *args, **kwargs)
 
