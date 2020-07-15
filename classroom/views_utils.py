@@ -7,14 +7,16 @@ from rest_framework.response import Response
 
 from classroom.models import ClassRoom
 from composeexample.permissions import OnlyEnrolled
+from rest_framework.exceptions import PermissionDenied
 
 
 def check_classroom_exists(f):
     """
-    a decorator to check if the classroom requested exists or not
+    a decorator to check:
+        if the classroom requested (dispatcher in the url) exists or not
     it expects the input data to be:
-    args : obj, request        ###(while being in order)
-    kwargs: pk              ###(which is the classroom id)
+        args : obj, request        ###(while being in order)
+        kwargs: pk              ###(which is the classroom id)
     """
     def wrapper(*args, **kwargs):
         obj, request = args
@@ -37,11 +39,14 @@ def check_classroom_exists(f):
 
 def check_user_enrolled(f):
     """
-    a decorator to check if the requester user is inside of the classroom or not
+    a decorator to check:
+        first: checks if the classroom exists or not. (from check_classroom_exists decorator)
+        second: if the requester user is inside of the classroom or not,
     it expects the input data to be:
-    args : obj, request        ###(while being in order)
-    kwargs: pk              ###(which is the classroom id)
+        args : obj, request        ###(while being in order)
+        kwargs: pk              ###(which is the classroom id)
     """
+    @check_classroom_exists
     def wrapper(*args, **kwargs):
         obj, request = args
         classroom_pk = kwargs.get("classroom_pk", None)
@@ -63,11 +68,15 @@ def check_user_enrolled(f):
 
 def check_classroom_owner(f):
     """
-    a decorator to check if the requester user is the classroom owner himself
+    a decorator to check:
+        first: checks if the classroom exists or not. (from check_classroom_exists decorator).
+        second: checks if the requester is the classroom owner himself.
+
     it expects the input data to be:
-    args : obj, request        ###(while being in order)
-    kwargs: pk              ###(which is the classroom id)
+        args : obj, request        ###(while being in order)
+        kwargs: pk              ###(which is the classroom id)
     """
+    @check_classroom_exists
     def wrapper(*args, **kwargs):
         obj, request = args
         classroom_pk = kwargs.get("classroom_pk", None)

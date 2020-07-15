@@ -13,7 +13,7 @@ from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskS
     PostUpdateSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material
 from classroom.utils import generate_promo_code
-from classroom.views_utils import check_user_enrolled, check_classroom_exists, check_classroom_owner
+from classroom.views_utils import check_user_enrolled, check_classroom_owner
 from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
     OnlyEnrolled, OwnerOnlyDeletesAndEdits, OnlyEnrolledRelated, OwnerAndTeacherDeleteOnly
 
@@ -186,14 +186,12 @@ class MaterialViewSetRoot(viewsets.ModelViewSet):
     serializer_class = MaterialSerializer
     permission_classes = [IsAuthenticated, OnlyTeacherCreates]
 
-    @check_classroom_exists
     @check_user_enrolled
     def list_classroom_material(self, request,  *args, **kwargs):
         classroom_pk = self.kwargs["pk"]
         self.queryset = self.get_queryset().filter(classroom=classroom_pk)
         return super(MaterialViewSetRoot, self).list(request, *args, **kwargs)
 
-    @check_classroom_exists
     @check_classroom_owner
     def create_classroom_material(self, request,  *args, **kwargs):
         classroom_pk = kwargs["pk"]
