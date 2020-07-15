@@ -60,6 +60,31 @@ def check_user_enrolled(f):
             )
     return wrapper
 
+
+def check_classroom_owner(f):
+    """
+    a decorator to check if the requester user is the classroom owner himself
+    it expects the input data to be:
+    args : obj, request        ###(while being in order)
+    kwargs: pk              ###(which is the classroom id)
+    """
+    def wrapper(*args, **kwargs):
+        obj, request = args
+        classroom_pk = kwargs.get("classroom_pk", None)
+        if classroom_pk is None:
+            classroom_pk = kwargs.get("pk", None)
+
+        classroom = ClassRoom.objects.get(id=classroom_pk)
+        # checks if the user is enrolled inside of the classroom
+        if classroom.user == request.user:
+            return f(*args, **kwargs)
+        else:
+            return Response(
+                data={"message": "only the classroom owner can perform this action"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+    return wrapper
+
 #
 # def check_user_enrolled(request, classroom_pk, *args, **kwargs):
 #     """
