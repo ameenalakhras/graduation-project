@@ -75,6 +75,10 @@ class ClassRoomSerializer(serializers.ModelSerializer):
 
 # the task serializer should make sure it's a teacher who is making the task
 class TaskSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+
     class Meta:
         model = Task
         exclude = soft_delete_fields

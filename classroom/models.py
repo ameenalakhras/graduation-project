@@ -60,6 +60,7 @@ class Task(SoftDeleteModel):
     title = models.CharField(max_length=50)
     content = models.TextField()
     attachments = models.ManyToManyField(Attachment, blank=True)
+    classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
 
 
 class TaskSolutionInfo(SoftDeleteModel):
