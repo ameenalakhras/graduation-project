@@ -164,17 +164,17 @@ class PostViewSet(PostViewSetRoot):
     permission_classes = [IsAuthenticated, OwnerEditOnly, OnlyEnrolledRelated, OwnerAndTeacherDeleteOnly]
 
 
-class MaterialViewSet(viewsets.ModelViewSet):
+class MaterialViewSetRoot(viewsets.ModelViewSet):
     queryset = Material.objects.filter(deleted=False)
     serializer_class = MaterialSerializer
-    permission_classes = [IsAuthenticated, OnlyTeacherCreates, OwnerOnlyDeletesAndEdits]
+    permission_classes = [IsAuthenticated, OnlyTeacherCreates]
 
     @check_classroom_exists
     @check_user_enrolled
     def list_classroom_material(self, request,  *args, **kwargs):
         classroom_pk = self.kwargs["pk"]
         self.queryset = self.get_queryset().filter(classroom=classroom_pk)
-        return super(MaterialViewSet, self).list(request)
+        return super(MaterialViewSetRoot, self).list(request)
 
     @check_classroom_exists
     def create_classroom_material(self, request,  *args, **kwargs):
@@ -195,11 +195,20 @@ class MaterialViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
+
+class MaterialViewSet(viewsets.ModelViewSet):
+    queryset = Material.objects.filter(deleted=False)
+    serializer_class = MaterialSerializer
+    permission_classes = [IsAuthenticated, OwnerOnlyDeletesAndEdits]
+
+    # i use check_user_enrolled decorator instead of OnlyEnrolledRelated permission class because
+    # the classroom is a ManyToManyField and not a ForeignKey, so the permission can't scan all
+    # the fields related to this one especially.
+    @check_user_enrolled
     def partial_update(self, request,  *args, **kwargs):
         self.serializer_class = PutMaterialSerializer
         return super(MaterialViewSet, self).partial_update(request)
 
-    @check_classroom_exists
     @check_user_enrolled
     def retrieve(self, request, *args, **kwargs):
         classroom_pk = self.kwargs["classroom_pk"]
