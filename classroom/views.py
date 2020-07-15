@@ -169,57 +169,40 @@ class MaterialViewSet(viewsets.ModelViewSet):
     serializer_class = MaterialSerializer
     permission_classes = [IsAuthenticated, OnlyTeacherCreates, OwnerOnlyDeletesAndEdits]
 
+    @check_classroom_exists
+    @check_user_enrolled
     def list_classroom_material(self, request,  *args, **kwargs):
-        classroom_pk = self.kwargs["classroom_pk"]
-        classroom_exists, exists_exception_response = check_classroom_exists(classroom_pk)
-        if classroom_exists:
-            user_enrolled, enrolled_exception_response = check_user_enrolled(request, classroom_pk)
-            if user_enrolled:
-                self.queryset = self.get_queryset().filter(classroom=classroom_pk)
-                return super(MaterialViewSet, self).list(request)
-            else:
-                return enrolled_exception_response
-        else:
-            return exists_exception_response
+        classroom_pk = self.kwargs["pk"]
+        self.queryset = self.get_queryset().filter(classroom=classroom_pk)
+        return super(MaterialViewSet, self).list(request)
 
+    @check_classroom_exists
     def create_classroom_material(self, request,  *args, **kwargs):
         # if the user isn't the teacher of the classroom_pk, he can't create the material
-        classroom_pk = self.kwargs["classroom_pk"]
+        classroom_pk = kwargs["pk"]
+        classroom = ClassRoom.objects.get(id=classroom_pk)
+        # check if the request isn't from another teacher outside of the classroom
+        if classroom.user == request.user:
+            request.data._mutable = True
+            request.data["classroom"] = classroom_pk
+            request.data._mutable = False
+            self.serializer_class = ClassroomMaterialSerializer
 
-        classroom_exists, exists_exception_response = check_classroom_exists(classroom_pk)
-
-        if classroom_exists:
-
-            classroom = ClassRoom.objects.get(id=classroom_pk)
-            # check if the request isn't from another teacher outside of the classroom
-            if classroom.user == request.user:
-                request.data._mutable = True
-                request.data["classroom"] = classroom_pk
-                request.data._mutable = False
-                self.serializer_class = ClassroomMaterialSerializer
-
-                return super().create(request)
-            else:
-                return Response(
-                    data={"message": "only the classroom teacher can create material inside it"},
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
+            return super().create(request)
         else:
-            return exists_exception_response
+            return Response(
+                data={"message": "only the classroom teacher can create material inside it"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
     def partial_update(self, request,  *args, **kwargs):
         self.serializer_class = PutMaterialSerializer
         return super(MaterialViewSet, self).partial_update(request)
 
+    @check_classroom_exists
+    @check_user_enrolled
     def retrieve(self, request, *args, **kwargs):
         classroom_pk = self.kwargs["classroom_pk"]
-        classroom_exists, exists_exception_response = check_classroom_exists(classroom_pk)
-        if classroom_exists:
-            user_enrolled, enrolled_exception_response = check_user_enrolled(request, classroom_pk)
-            if user_enrolled:
-                self.queryset = self.get_queryset().filter(classroom=classroom_pk)
-                return super(MaterialViewSet, self).retrieve(request)
-            else:
-                return enrolled_exception_response
-        else:
-            return exists_exception_response
+        self.queryset = self.get_queryset().filter(classroom=classroom_pk)
+        return super(MaterialViewSet, self).retrieve(request)
+

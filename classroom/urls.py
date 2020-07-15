@@ -13,7 +13,7 @@ urlpatterns = [
              actions={"get": "retrieve", "delete": "destroy", "put": "partial_update"}
             ), name="material"
          ),
-    path('classrooms/<int:classroom_pk>/materials/',
+    path('classrooms/<int:pk>/materials/',
          MaterialViewSet.as_view(actions={"post": "create_classroom_material", "get": "list_classroom_material"}),
          name="material"
          ),
@@ -34,7 +34,7 @@ urlpatterns = [
          name="comment"
          ),
     path('tasks/', TaskViewSet.as_view(actions=basic_actions), name="task"),
-    path('posts/', PostViewSetRoot.as_view(actions={"post": "create"}), name="post"),
+    path('classrooms/<int:pk>/posts/', PostViewSetRoot.as_view(actions={"post": "create"}), name="post"),
     path('posts/<int:pk>/', PostViewSet.as_view(
         actions={"get": "retrieve", "delete": "destroy", "put": "partial_update"}),
          name="post"
