@@ -61,6 +61,8 @@ class Task(SoftDeleteModel):
     content = models.TextField()
     attachments = models.ManyToManyField(Attachment, blank=True)
     classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
+    accept_solutions = models.BooleanField(default=True)
+    accept_solutions_due = models.DateTimeField(null=True)
 
 
 class TaskSolutionInfo(SoftDeleteModel):

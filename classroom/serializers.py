@@ -97,3 +97,8 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         exclude = soft_delete_fields
 
+
+class TaskUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = ("title", "content", "attachments", "accept_solutions", "accept_solutions_due")

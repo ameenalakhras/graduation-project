@@ -10,7 +10,7 @@ from django.http import HttpResponseRedirect
 
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer, \
     PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, PutMaterialSerializer, CommentsUpdateSerializer, \
-    PostUpdateSerializer
+    PostUpdateSerializer, TaskUpdateSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material
 from classroom.utils import generate_promo_code
 from classroom.views_utils import check_user_enrolled, check_classroom_owner
@@ -147,10 +147,37 @@ class CommentViewSet(viewsets.ModelViewSet):
             )
 
 
+class TaskViewSetRoot(viewsets.ModelViewSet):
+    queryset = Task.objects.filter(deleted=False)
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated, OnlyTeacherCreates]
+
+    @check_classroom_owner
+    def create(self, request, *args, **kwargs):
+        classroom_pk = kwargs.get("pk", None)
+        request.data._mutable = True
+        request.data["classroom"] = classroom_pk
+        request.data._mutable = False
+        return super(TaskViewSetRoot, self).create(request, *args, **kwargs)
+
+    def list(self, request, *args, **kwargs):
+        classroom_pk = kwargs.get("pk", None)
+        self.queryset = self.get_queryset().filter(classroom=classroom_pk)
+        return super(TaskViewSetRoot, self).list(request, *args, **kwargs)
+
+
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.filter(deleted=False)
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated, OwnerEditOnly, OwnerOnlyDeletesAndEdits]
+    permission_classes = [IsAuthenticated, OwnerOnlyDeletesAndEdits, OnlyEnrolledRelated]
+
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+
+        if self.request.method == 'PUT':
+            serializer_class = TaskUpdateSerializer
+
+        return serializer_class
 
 
 class PostViewSetRoot(viewsets.ModelViewSet):

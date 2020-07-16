@@ -1,7 +1,8 @@
 from django.urls import path
 
 from classroom.views import ClassRoomViewSet, CommentViewSet, TaskViewSet, PostViewSet, MaterialViewSet, \
-    ClassRoomViewSetRoot, PostViewSetRoot, MaterialViewSetRoot
+    ClassRoomViewSetRoot, PostViewSetRoot, MaterialViewSetRoot, TaskViewSetRoot
+
 list_create = {"get": "list", "post": "create"}
 all_actions = {"get": "retrieve", "delete": "destroy", "post": "create", "put": "partial_update"}
 basic_actions = {"get": "retrieve", "delete": "destroy", "post": "create"}
@@ -33,7 +34,13 @@ urlpatterns = [
         actions={"delete": "destroy", "put": "partial_update"}),
          name="comment"
          ),
-    path('tasks/', TaskViewSet.as_view(actions=basic_actions), name="task"),
+    path('classrooms/<int:pk>/tasks/', TaskViewSetRoot.as_view(
+        actions={"post": "create", "get": "list"}
+    ), name="task"),
+    path('tasks/<int:pk>/', TaskViewSet.as_view(
+        actions={"get": "retrieve", "delete": "destroy", "put": "partial_update"}
+    ), name="task"),
+
     path('classrooms/<int:pk>/posts/', PostViewSetRoot.as_view(actions={"post": "create"}), name="post"),
     path('posts/<int:pk>/', PostViewSet.as_view(
         actions={"get": "retrieve", "delete": "destroy", "put": "partial_update"}),
