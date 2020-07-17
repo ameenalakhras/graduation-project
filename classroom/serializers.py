@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from classroom.models import ClassRoom, Comments, Task, Post, Material#, ClassRoomTeacher
+from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo  # , ClassRoomTeacher
 from main.serializers import soft_delete_fields
 
 from authentication.serializers import UserSerializer
@@ -102,3 +102,9 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ("title", "content", "attachments", "accept_solutions", "accept_solutions_due")
+
+
+class TaskSolutionInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskSolutionInfo
+        fields = ("attachment", "notes", "id")

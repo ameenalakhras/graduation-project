@@ -7,13 +7,14 @@ from rest_framework import status
 from django.urls import reverse
 from django.contrib.auth.models import Group
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer, \
     PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, PutMaterialSerializer, CommentsUpdateSerializer, \
-    PostUpdateSerializer, TaskUpdateSerializer
-from classroom.models import ClassRoom, Comments, Task, Post, Material
+    PostUpdateSerializer, TaskUpdateSerializer, TaskSolutionInfoSerializer
+from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo, TaskSolution
 from classroom.utils import generate_promo_code
-from classroom.views_utils import check_user_enrolled, check_classroom_owner
+from classroom.views_utils import check_user_enrolled, check_classroom_owner, check_attachment_owner
 from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
     OnlyEnrolled, OwnerOnlyDeletesAndEdits, OnlyEnrolledRelated, OwnerAndTeacherDeleteOnly
 
@@ -178,6 +179,42 @@ class TaskViewSet(viewsets.ModelViewSet):
             serializer_class = TaskUpdateSerializer
 
         return serializer_class
+
+
+class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
+    queryset = TaskSolutionInfo.objects.filter(deleted=False)
+    serializer_class = TaskSolutionInfoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create_task_solution(self, request, task_solution, *args, **kwargs):
+        obj_creation_response = super(TaskSolutionInfoViewSet, self).create(request, *args, **kwargs)
+        # 201 : object created successfully
+        if obj_creation_response.status_code == 201:
+            created_object_id = obj_creation_response.data.get("id", None)
+            obj = get_object_or_404(TaskSolutionInfo, id=created_object_id)
+            task_solution.solutionInfo.add(obj)
+
+        return obj_creation_response
+
+    @check_attachment_owner
+    def create(self, request, *args, **kwargs):
+        task_pk = kwargs.get("pk", None)
+        task = get_object_or_404(Task, pk=task_pk)
+        task_solution_exists = TaskSolution.objects.filter(task=task, user=request.user).exists()
+        if task_solution_exists:
+            # make sure solution isn't accepted >> create solution info
+            task_solution = get_object_or_404(TaskSolution, task=task, user=request.user)
+            if task_solution.accepted:
+                return Response(
+                    data={"info": "you have an accepted solution already, you can't submit more solutions."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            else:
+
+                return self.perform_create_task_solution(request, task_solution, *args, **kwargs)
+        else:
+            task_solution = TaskSolution.objects.create(task=task, user=request.user)
+            return self.perform_create_task_solution(request, task_solution, *args, **kwargs)
 
 
 class PostViewSetRoot(viewsets.ModelViewSet):

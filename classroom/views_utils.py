@@ -9,6 +9,8 @@ from classroom.models import ClassRoom
 from composeexample.permissions import OnlyEnrolled
 from rest_framework.exceptions import PermissionDenied
 
+from main.models import Attachment
+from django.shortcuts import get_object_or_404
 
 def check_classroom_exists(f):
     """
@@ -90,6 +92,23 @@ def check_classroom_owner(f):
         else:
             return Response(
                 data={"message": "only the classroom owner can perform this action"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+    return wrapper
+
+
+def check_attachment_owner(f):
+    def wrapper(*args, **kwargs):
+        obj, request = args
+        attachment_id = request.data.get("attachment", None)
+        attachment = get_object_or_404(Attachment, id=attachment_id)
+        # checks if the requester user is the attachment owner
+        requester_is_owner = (attachment.user == request.user)
+        if requester_is_owner:
+            return f(*args, **kwargs)
+        else:
+            return Response(
+                data={"message": "you can submit your attachments only."},
                 status=status.HTTP_401_UNAUTHORIZED
             )
     return wrapper
