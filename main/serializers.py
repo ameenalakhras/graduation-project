@@ -28,7 +28,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        exclude = soft_delete_fields
+        fields = ["avatar", "user"]
 
 
 class AttachmentSerializer(serializers.ModelSerializer):

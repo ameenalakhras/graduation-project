@@ -34,7 +34,7 @@ class SoftDeleteModel(BaseModel):
 
 
 class UserProfile(SoftDeleteModel):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     avatar = models.ImageField(upload_to=get_avatar_path, null=True)
 
     def __str__(self):
