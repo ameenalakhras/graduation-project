@@ -25,6 +25,20 @@ class OwnerDeleteOnly(permissions.BasePermission):
             return True
 
 
+class OwnerAndTeacherDeleteOnly(permissions.BasePermission):
+    """
+    Object-level permission to only allow the owner of the object or the teacher (inside of the classroom field)
+     to delete the object
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if request.method == "DELETE":
+
+            return (obj.user == request.user) or (obj.classroom.user == request.user)
+        else:
+            return True
+
+
 class OwnerOnlyDeletesAndEdits(permissions.BasePermission):
     """
     Object-level permission to only allow the owner to delete and edit the object
@@ -32,7 +46,7 @@ class OwnerOnlyDeletesAndEdits(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         # Read permissions are allowed to any request,
         # so we'll always allow GET, HEAD or OPTIONS requests.
-        if request.method == "DELETE" or request.method == "PUT":
+        if (request.method == "DELETE") or (request.method == "PUT"):
             return obj.user == request.user
         else:
             return True
@@ -50,6 +64,15 @@ class OnlyEnrolled(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         return (request.user in obj.students.all()) or (request.user == obj.user)
+
+
+class OnlyEnrolledRelated(permissions.BasePermission):
+    """
+    same class as OnlyEnrolled but it checks where the model has classroom (FK) as a field
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return (request.user in obj.classroom.students.all()) or (request.user == obj.classroom.user)
 
 
 class OnlyTeacherCreates(permissions.BasePermission):

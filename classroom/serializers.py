@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from classroom.models import ClassRoom, Comments, Task, Post, Material#, ClassRoomTeacher
+from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo  # , ClassRoomTeacher
 from main.serializers import soft_delete_fields
 
 from authentication.serializers import UserSerializer
@@ -48,12 +48,29 @@ class CommentsSerializer(serializers.ModelSerializer):
         exclude = soft_delete_fields
 
 
+class CommentsUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Comments
+        fields = ('content', )
+
+
 class PostSerializer(serializers.ModelSerializer):
     comments = CommentsSerializer(source="post_comments", many=True, read_only=True)
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
 
     class Meta:
         model = Post
         exclude = soft_delete_fields
+
+
+class PostUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Post
+        fields = ("content", )
 
 
 class ClassRoomSerializer(serializers.ModelSerializer):
@@ -72,7 +89,32 @@ class ClassRoomSerializer(serializers.ModelSerializer):
 
 # the task serializer should make sure it's a teacher who is making the task
 class TaskSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+
     class Meta:
         model = Task
         exclude = soft_delete_fields
 
+
+class TaskUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = ("title", "content", "attachments", "accept_solutions", "accept_solutions_due")
+
+
+class TaskSolutionInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskSolutionInfo
+        fields = ("attachment", "notes", "id")
+
+
+class TaskSolutionInfoUpdateSerializer(serializers.ModelSerializer):
+    """
+    this class serves as the update serializer for the teacher to submit  the task solution status
+     (accepted or not).
+    """
+    class Meta:
+        model = TaskSolutionInfo
+        fields = ("accepted", )

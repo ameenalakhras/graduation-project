@@ -6,7 +6,7 @@ from django.urls import path, include
 router = routers.DefaultRouter()
 
 router.register('user_profile', UserProfileViewSet)
-router.register("attachment", AttachmentViewSet)
+router.register("attachments", AttachmentViewSet)
 # router.register('permission', PermissionViewSet)
 
 # urlpatterns = router.urls

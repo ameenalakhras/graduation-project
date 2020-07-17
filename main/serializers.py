@@ -1,10 +1,24 @@
 
 from rest_framework import serializers
 # from rest_framework.decorators import api_view, permission_classes
+from main.choices import ATTACHMENTS_TYPE_CHOICES
 from main.models import UserProfile, Attachment#, Notification
 
 soft_delete_fields = ('deleted_at','deleted')
 
+
+class ChoicesSerializerField(serializers.SerializerMethodField):
+    """
+    A read-only field that return the representation of a model field with choices.
+    """
+
+    def to_representation(self, value):
+        # sample: 'get_XXXX_display'
+        method_name = 'get_{field_name}_display'.format(field_name=self.field_name)
+        # retrieve instance method
+        method = getattr(value, method_name)
+        # finally use instance method to return result of get_XXXX_display()
+        return method()
 
 class UserProfileSerializer(serializers.ModelSerializer):
 
@@ -14,16 +28,24 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        exclude = soft_delete_fields
+        fields = ["avatar", "user"]
 
 
 class AttachmentSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+    attachment_type = serializers.CharField(source="get__type_display", read_only=True)
 
     class Meta:
         model = Attachment
         exclude = soft_delete_fields
-        read_only_fields = ('user',)
 
+
+class AttachmentUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attachment
+        fields = ("id", "title", "file")
 
 
 # class NotificationSerializer(serializers.ModelSerializer):

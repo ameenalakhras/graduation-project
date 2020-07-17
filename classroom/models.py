@@ -14,11 +14,13 @@ class ClassRoom(SoftDeleteModel):
     logo_img = models.ImageField(
                                 upload_to=get_classroom_logo_path,
                                 storage=get_storage(), null=True,
-                                default=default_class_logo_img()
+                                default=default_class_logo_img(),
+                                max_length=1000
     )
     background_img = models.ImageField(
                                     upload_to=get_classroom_bg_path, storage=get_storage(),
-                                    null=True, default=default_class_background_img()
+                                    null=True, default=default_class_background_img(),
+                                    max_length=1000
     )
     description = models.TextField(null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="teacher_classrooms")
@@ -48,7 +50,7 @@ class Comments(SoftDeleteModel):
 class Material(SoftDeleteModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user_material")
     classroom = models.ManyToManyField(ClassRoom, related_name="classroom_material", blank=True)
-    file = models.FileField()
+    file = models.FileField(max_length=1000)
 
 
 class Task(SoftDeleteModel):
@@ -58,15 +60,23 @@ class Task(SoftDeleteModel):
     title = models.CharField(max_length=50)
     content = models.TextField()
     attachments = models.ManyToManyField(Attachment, blank=True)
+    classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
+    accept_solutions = models.BooleanField(default=True)
+    accept_solutions_due = models.DateTimeField(null=True)
 
 
 class TaskSolutionInfo(SoftDeleteModel):
-    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE)
+    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE, limit_choices_to={"_type": 3})
     notes = models.CharField(max_length=300, null=True)
     accepted = models.BooleanField(null=True)
 
 
 class TaskSolution(SoftDeleteModel):
     accepted = models.BooleanField(null=True)
-    solutionInfo = models.ManyToManyField(Attachment, blank=True)
-    task = models.OneToOneField(Task, on_delete=models.CASCADE)
+    solutionInfo = models.ManyToManyField(TaskSolutionInfo, blank=True, related_name="task_main_model")
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ["user", "task"]
+

@@ -4,17 +4,27 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import ugettext_lazy as _
 from django.core import exceptions
+from django.contrib.auth.models import Group
 
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-
 from authentication.models import User
+from main.serializers import UserProfileSerializer
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ["id", "name"]
 
 
 class UserSerializer(serializers.ModelSerializer):
+    groups = GroupSerializer(many=True)
+    profile = UserProfileSerializer()
+
     class Meta:
         model = User
-        fields = ["username", "first_name", "last_name"]
+        fields = ["id", "username", "first_name", "last_name", "groups", "profile"]
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -97,7 +107,8 @@ class UserPasswordChangeSerializer(serializers.Serializer):
 
 class TokenSerializer(serializers.ModelSerializer):
     auth_token = serializers.CharField(source='key')
+    user = UserSerializer()
 
     class Meta:
         model = Token
-        fields = ("auth_token", "created")
+        fields = ("auth_token", "created", "user")
