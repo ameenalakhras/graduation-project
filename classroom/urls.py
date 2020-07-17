@@ -49,4 +49,7 @@ urlpatterns = [
     path('tasks/<int:pk>/solution/', TaskSolutionInfoViewSet.as_view(
         actions={"post": "create"}
     ), name="task"),
+    path('tasks_solution/<int:pk>/', TaskSolutionInfoViewSet.as_view(
+        actions={"put": "update"}
+    ), name="task_solution_update"),
 ]

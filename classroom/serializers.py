@@ -108,3 +108,13 @@ class TaskSolutionInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaskSolutionInfo
         fields = ("attachment", "notes", "id")
+
+
+class TaskSolutionInfoUpdateSerializer(serializers.ModelSerializer):
+    """
+    this class serves as the update serializer for the teacher to submit  the task solution status
+     (accepted or not).
+    """
+    class Meta:
+        model = TaskSolutionInfo
+        fields = ("accepted", )

@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer, \
     PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, PutMaterialSerializer, CommentsUpdateSerializer, \
-    PostUpdateSerializer, TaskUpdateSerializer, TaskSolutionInfoSerializer
+    PostUpdateSerializer, TaskUpdateSerializer, TaskSolutionInfoSerializer, TaskSolutionInfoUpdateSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo, TaskSolution
 from classroom.utils import generate_promo_code
 from classroom.views_utils import check_user_enrolled, check_classroom_owner, check_attachment_owner
@@ -196,6 +196,14 @@ class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
 
         return obj_creation_response
 
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+
+        if self.request.method == 'PUT':
+            serializer_class = TaskSolutionInfoUpdateSerializer
+
+        return serializer_class
+
     @check_attachment_owner
     def create(self, request, *args, **kwargs):
         task_pk = kwargs.get("pk", None)
@@ -215,6 +223,49 @@ class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
         else:
             task_solution = TaskSolution.objects.create(task=task, user=request.user)
             return self.perform_create_task_solution(request, task_solution, *args, **kwargs)
+
+    # make sure he is a teacher (the requester)
+    def update(self, request, *args, **kwargs):
+        obj = self.get_object()
+        task_solution_obj = obj.task_main_model.first()
+        one_solution_accepted = task_solution_obj.solutionInfo.filter(accepted=True).exists()
+        accepted_status = request.data.get("accepted", None)
+
+        if (accepted_status == "1") or (accepted_status == "True"):
+            if not one_solution_accepted:
+                response = super(TaskSolutionInfoViewSet, self).update(request, *args, **kwargs)
+                one_solution_accepted = task_solution_obj.solutionInfo.filter(accepted=True).exists()
+
+                if one_solution_accepted:
+                    task_solution_obj.accepted = True
+                    task_solution_obj.save()
+                return response
+            # if a solution is accepted already
+            else:
+                return Response(
+                    data={"info": "the student has an accepted solution already, you can't accept more solutions."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        elif (accepted_status == "0") or (accepted_status == "False"):
+            if one_solution_accepted:
+                response = super(TaskSolutionInfoViewSet, self).update(request, *args, **kwargs)
+                one_solution_accepted = task_solution_obj.solutionInfo.filter(accepted=True).exists()
+
+                if not one_solution_accepted:
+                    task_solution_obj.accepted = False
+                    task_solution_obj.save()
+
+                return response
+
+            else:
+                response = super(TaskSolutionInfoViewSet, self).update(request, *args, **kwargs)
+                return response
+
+        else:
+            return Response(
+                data={"info": "acceptance status isn't recognized."},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
 
 class PostViewSetRoot(viewsets.ModelViewSet):
