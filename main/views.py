@@ -1,5 +1,6 @@
 from main.models import UserProfile, Attachment
-from main.serializers import UserProfileSerializer, AttachmentSerializer#, NotificationSerializer
+from main.serializers import UserProfileSerializer, AttachmentSerializer, \
+    AttachmentUpdateSerializer  # , NotificationSerializer
 from composeexample.permissions import OwnerEditOnly
 
 from rest_framework import viewsets
@@ -25,9 +26,18 @@ class AttachmentViewSet(viewsets.ModelViewSet):
     queryset = Attachment.objects.filter(deleted=False)
     serializer_class = AttachmentSerializer
     permission_classes = [IsAuthenticated, OwnerEditOnly]
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-#
+
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+
+        if self.request.method == 'PATCH':
+            serializer_class = AttachmentUpdateSerializer
+
+        return serializer_class
+
+    def list(self, request, *args, **kwargs):
+        self.queryset = self.get_queryset().filter(user=request.user)
+        return super(AttachmentViewSet, self).list(request, *args, **kwargs)
 # class SettingsOptionsSet(viewsets.ModelViewSet):
 #     queryset = SettingsOptions.objects.all()
 #     serializer_class = SettingsOptionsSerializer
