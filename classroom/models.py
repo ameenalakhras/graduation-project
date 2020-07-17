@@ -66,12 +66,17 @@ class Task(SoftDeleteModel):
 
 
 class TaskSolutionInfo(SoftDeleteModel):
-    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE)
+    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE, limit_choices_to={"_type": 3})
     notes = models.CharField(max_length=300, null=True)
     accepted = models.BooleanField(null=True)
 
 
 class TaskSolution(SoftDeleteModel):
     accepted = models.BooleanField(null=True)
-    solutionInfo = models.ManyToManyField(Attachment, blank=True)
-    task = models.OneToOneField(Task, on_delete=models.CASCADE)
+    solutionInfo = models.ManyToManyField(TaskSolutionInfo, blank=True, related_name="task_main_model")
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ["user", "task"]
+

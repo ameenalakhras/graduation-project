@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 
+from main.choices import ATTACHMENTS_TYPE_CHOICES
 from main.utils import get_avatar_path, get_attchment_path
 
 
@@ -49,21 +50,11 @@ class Notification(BaseModel):
     received_at = models.DateTimeField(null=True)
 
 
-class AttachmentType(BaseModel):
-    """
-        'classroom' or 'task attachment' for now
-    """
-    name = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.name
-
-
 class Attachment(SoftDeleteModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     file = models.FileField(upload_to=get_attchment_path)
-    _type = models.ForeignKey(AttachmentType, on_delete=models.CASCADE)
+    _type = models.IntegerField(choices=ATTACHMENTS_TYPE_CHOICES)
 
     def __str__(self):
         return self.title
