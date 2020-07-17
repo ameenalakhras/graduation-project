@@ -14,7 +14,9 @@ from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskS
     PostUpdateSerializer, TaskUpdateSerializer, TaskSolutionInfoSerializer, TaskSolutionInfoUpdateSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo, TaskSolution
 from classroom.utils import generate_promo_code
-from classroom.views_utils import check_user_enrolled, check_classroom_owner, check_attachment_owner
+from classroom.views_utils import check_user_enrolled, check_classroom_owner, check_attachment_owner, \
+    check_requester_is_teacher, check_requester_is_student, check_task_solution_info_class_owner, \
+    check_enrolled_related
 from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
     OnlyEnrolled, OwnerOnlyDeletesAndEdits, OnlyEnrolledRelated, OwnerAndTeacherDeleteOnly
 
@@ -204,6 +206,8 @@ class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
 
         return serializer_class
 
+    @check_enrolled_related(model=Task)
+    @check_requester_is_student
     @check_attachment_owner
     def create(self, request, *args, **kwargs):
         task_pk = kwargs.get("pk", None)
@@ -224,7 +228,8 @@ class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
             task_solution = TaskSolution.objects.create(task=task, user=request.user)
             return self.perform_create_task_solution(request, task_solution, *args, **kwargs)
 
-    # make sure he is a teacher (the requester)
+    @check_requester_is_teacher
+    @check_task_solution_info_class_owner
     def update(self, request, *args, **kwargs):
         obj = self.get_object()
         task_solution_obj = obj.task_main_model.first()

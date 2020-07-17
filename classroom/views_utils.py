@@ -5,12 +5,14 @@
 from rest_framework import status
 from rest_framework.response import Response
 
-from classroom.models import ClassRoom
-from composeexample.permissions import OnlyEnrolled
+from classroom.models import ClassRoom, Task
+from composeexample.permissions import OnlyEnrolled, OnlyEnrolledRelated
 from rest_framework.exceptions import PermissionDenied
 
 from main.models import Attachment
 from django.shortcuts import get_object_or_404
+from functools import wraps
+
 
 def check_classroom_exists(f):
     """
@@ -112,6 +114,78 @@ def check_attachment_owner(f):
                 status=status.HTTP_401_UNAUTHORIZED
             )
     return wrapper
+
+
+def check_requester_is_student(f):
+    def wrapper(*args, **kwargs):
+        obj, request = args
+        student_is_student = request.user.groups.filter(name="students").exists()
+        if student_is_student:
+            return f(*args, **kwargs)
+        else:
+            return Response(
+                data={"message": "only students can do this request."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+    return wrapper
+
+
+def check_requester_is_teacher(f):
+    def wrapper(*args, **kwargs):
+        obj, request = args
+        student_is_teacher = request.user.groups.filter(name="teachers").exists()
+        if student_is_teacher:
+            return f(*args, **kwargs)
+        else:
+            return Response(
+                data={"message": "only teachers can do this request."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+    return wrapper
+
+
+def check_task_solution_info_class_owner(f):
+    """
+    checks if the requester changing the acceptance of the task solutions is the owner of the task submitted
+    """
+    def wrapper(*args, **kwargs):
+        obj, request = args
+        task_owner = obj.task_main_model.task.user
+        requester = request.user
+        if task_owner == requester:
+            return f(*args, **kwargs)
+        else:
+            return Response(
+                data={"info": "you don't have the permission to perform this action."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+    return wrapper
+
+
+def check_enrolled_related(model):
+    """
+    this request is pretty much OnlyEnrolledRelated but that works with create requests since
+    OnlyEnrolledRelated doesn't work on create requests
+
+    it takes model as an argument to get its id from the url.
+
+    """
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            _, request = args
+            related_pk = kwargs.get("pk", None)
+            obj = get_object_or_404(model, id=related_pk)
+            user_enrolled = OnlyEnrolledRelated().has_object_permission(request=request, view=obj, obj=obj)
+            if user_enrolled:
+                return f(*args, **kwargs)
+            else:
+                return Response(
+                    data={"message": "user isn't enrolled in the classroom"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+        return wrapper
+    return decorator
 
 #
 # def check_user_enrolled(request, classroom_pk, *args, **kwargs):
