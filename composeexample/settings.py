@@ -29,8 +29,15 @@ server_status = os.getenv("SERVER_STATUS") or "local"
 # convert string to boolean
 USE_S3 = (os.getenv("USE_S3") == "True")
 USE_AWS_FOR_OFFLINE_USAGE = (os.getenv("USE_AWS_FOR_OFFLINE_USAGE") == "True")
+
+USE_SENDGRID = (os.getenv("USE_SENDGRID") == "True")
+
 DEBUG = (os.getenv("DEBUG") == "True")
 
+if USE_SENDGRID:
+    EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
+    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY") or None
+    DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL") or None
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
