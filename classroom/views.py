@@ -10,7 +10,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer, \
-    PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, PutMaterialSerializer, CommentsUpdateSerializer, \
+    PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, EditMaterialSerializer, CommentsUpdateSerializer, \
     PostUpdateSerializer, TaskUpdateSerializer, TaskSolutionInfoSerializer, TaskSolutionInfoUpdateSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo, TaskSolution
 from classroom.utils import generate_promo_code
@@ -127,7 +127,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer_class = self.serializer_class
 
-        if self.request.method == 'PUT':
+        if self.request.method == 'PATCH':
             serializer_class = CommentsUpdateSerializer
 
         return serializer_class
@@ -177,7 +177,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer_class = self.serializer_class
 
-        if self.request.method == 'PUT':
+        if self.request.method == 'PATCH':
             serializer_class = TaskUpdateSerializer
 
         return serializer_class
@@ -201,7 +201,7 @@ class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer_class = self.serializer_class
 
-        if self.request.method == 'PUT':
+        if self.request.method == 'PATCH':
             serializer_class = TaskSolutionInfoUpdateSerializer
 
         return serializer_class
@@ -295,7 +295,7 @@ class PostViewSet(PostViewSetRoot):
     def get_serializer_class(self):
         serializer_class = self.serializer_class
 
-        if self.request.method == 'PUT':
+        if self.request.method == 'PATCH':
             serializer_class = PostUpdateSerializer
 
         return serializer_class
@@ -332,7 +332,7 @@ class MaterialViewSet(viewsets.ModelViewSet):
     # the fields related to this one especially.
     @check_user_enrolled
     def partial_update(self, request,  *args, **kwargs):
-        self.serializer_class = PutMaterialSerializer
+        self.serializer_class = EditMaterialSerializer
         return super(MaterialViewSet, self).partial_update(request, *args, **kwargs)
 
     @check_user_enrolled
