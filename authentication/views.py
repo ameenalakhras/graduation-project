@@ -1,11 +1,16 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.generics import RetrieveDestroyAPIView
+from rest_framework.generics import RetrieveDestroyAPIView, CreateAPIView, UpdateAPIView
+
+from authentication.choices import TOKEN_TYPES_DICT
 from authentication.serializers import UserRegistrationSerializer, UserLoginSerializer, TokenSerializer, \
-    UserPasswordChangeSerializer
+    UserPasswordChangeSerializer, CustomTokenSerializer, ResetPasswordSerializer
+
+from authentication.models import User, CustomToken
 
 
 class UserRegistrationAPIView(CreateAPIView):
@@ -59,6 +64,10 @@ class UserPasswordChange(GenericAPIView):
             user = serializer.user
             user.set_password(request.data["new_password"])
             user.save()
+            token, created = Token.objects.get_or_create(user=serializer.object['user'])
+            if created:
+                token.save()
+
             return Response(
                 data={'status': 'password set'},
                 status=status.HTTP_200_OK,
@@ -90,3 +99,65 @@ class UserTokenAPIView(RetrieveDestroyAPIView):
             Token.objects.get(key=request.auth.key).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return super(UserTokenAPIView, self).destroy(request, key, *args, **kwargs)
+
+
+class CustomTokenCreateAPIView(CreateAPIView):
+    permission_classes = []
+    serializer_class = CustomTokenSerializer
+
+    def create(self, request, *args, **kwargs):
+        username = self.request.data.get("username", None)
+        user_obj = get_object_or_404(User, username=username)
+        request.data._mutable = True
+        request.data["user"] = user_obj.id
+        request.data.pop("username")
+        # 2 : "password reset" type
+        request.data["_type"] = TOKEN_TYPES_DICT.get("password reset", 2)
+        request.data._mutable = False
+
+        response = super(CustomTokenCreateAPIView, self).create(request, *args, **kwargs)
+        request_created = (response.status_code == 201)
+        if request_created:
+            return Response(
+                data={
+                    "info": "your request has been added, please check your email."
+                }, status=status.HTTP_200_OK
+            )
+        else:
+            return response
+
+
+class CustomTokenRetrieveDestroyUpdateAPIView(RetrieveDestroyAPIView, UpdateAPIView):
+    queryset = CustomToken.objects.filter(expired=False, destroyed=False)
+    permission_classes = []
+    serializer_class = CustomTokenSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        token_key = self.request.data.get("key", None)
+        token_obj = get_object_or_404(self.queryset, key=token_key)
+        instance = token_obj
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def put(self, request, *args, **kwargs):
+        token_key = self.request.data.get("key", None)
+        token_obj = get_object_or_404(self.queryset, key=token_key)
+        self.serializer_class = ResetPasswordSerializer
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = token_obj.user
+            new_password = self.request.data.get("password", None)
+            user.set_password(raw_password=new_password)
+            user.save()
+            token_obj.expired = True
+            token_obj.save()
+
+            return Response(
+                data={'status': 'password set'},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                data=serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
