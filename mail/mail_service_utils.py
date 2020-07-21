@@ -1,6 +1,8 @@
 from django.conf import settings
+from django.template.loader import render_to_string
 
 from mail.models import Mail as MailModel
+from mail.utils import build_url
 
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
@@ -38,3 +40,15 @@ def send_mail(to_users, subject, html_content, from_email=settings.DEFAULT_FROM_
     )
     mail_obj.receiver_users.set(to_users)
     mail_obj.save()
+
+
+def send_reset_password_email(to_users, token):
+    subject = f"resetting password for user {to_users.username}"
+    url = build_url("authentication:reset_password", pars={"key": token})
+    global_url = settings.WWW_WEBSITE_GLOBAL_URL + url
+    context = {
+        "user": to_users,
+        "url": global_url,
+    }
+    html_content = render_to_string(template_name="rest_password_email.html", context=context)
+    send_mail(to_users, subject, html_content, from_email=settings.DEFAULT_FROM_EMAIL, _type=1)

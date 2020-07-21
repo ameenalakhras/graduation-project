@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView, GenericAPIView
@@ -11,6 +12,7 @@ from authentication.serializers import UserRegistrationSerializer, UserLoginSeri
     UserPasswordChangeSerializer, CustomTokenSerializer, ResetPasswordSerializer
 
 from authentication.models import User, CustomToken
+from mail.mail_service_utils import send_reset_password_email
 
 
 class UserRegistrationAPIView(CreateAPIView):
@@ -117,7 +119,10 @@ class CustomTokenCreateAPIView(CreateAPIView):
 
         response = super(CustomTokenCreateAPIView, self).create(request, *args, **kwargs)
         request_created = (response.status_code == 201)
-        if request_created:
+        token = response.data.get("key", None)
+        if request_created and (token is not None):
+
+            send_reset_password_email(to_users=user_obj, token=token)
             return Response(
                 data={
                     "info": "your request has been added, please check your email."
@@ -133,9 +138,8 @@ class CustomTokenRetrieveDestroyUpdateAPIView(RetrieveDestroyAPIView, UpdateAPIV
     serializer_class = CustomTokenSerializer
 
     def retrieve(self, request, *args, **kwargs):
-        token_key = self.request.data.get("key", None)
-        token_obj = get_object_or_404(self.queryset, key=token_key)
-        instance = token_obj
+        token_key = self.request.GET.get("key", None)
+        instance = get_object_or_404(self.queryset, key=token_key)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
@@ -161,3 +165,12 @@ class CustomTokenRetrieveDestroyUpdateAPIView(RetrieveDestroyAPIView, UpdateAPIV
                 data=serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+    def destroy(self, request, *args, **kwargs):
+        token_key = self.request.GET.get("key", None)
+        instance = get_object_or_404(self.queryset, key=token_key)
+        instance.expired = True
+        instance.destroyed = True
+        instance.destruction_date = timezone.now()
+        instance.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)

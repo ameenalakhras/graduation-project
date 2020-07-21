@@ -26,6 +26,12 @@ database_status = os.getenv("DATABASE_STATUS") or "local"
 # global or local
 server_status = os.getenv("SERVER_STATUS") or "local"
 
+if server_status == "local":
+    WWW_WEBSITE_GLOBAL_URL = "http://127.0.0.1:8000"
+else:
+    WWW_WEBSITE_GLOBAL_URL = f"www.{WEBSITE_GLOBAL_URL}"
+
+
 # convert string to boolean
 USE_S3 = (os.getenv("USE_S3") == "True")
 USE_AWS_FOR_OFFLINE_USAGE = (os.getenv("USE_AWS_FOR_OFFLINE_USAGE") == "True")
