@@ -15,7 +15,7 @@ class CourseSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
-    user = UserSerializer()
+    user_info = UserSerializer(source="user", read_only=True)
 
     class Meta:
         model = Course
