@@ -21,7 +21,11 @@ def default_class_logo_img():
 
 
 def default_class_background_img():
-    return 'users/3/classroom/backgrounds/676c76b5-f361-46ce-a926-c3366855100f/header_classroom_default.png'
+    return 'images/users/3/classroom/backgrounds/676c76b5-f361-46ce-a926-c3366855100f/header_classroom_default.png'
+
+
+def default_avatar_img():
+    return "images/users/2/avatar/ae015c75-a8d3-4253-8208-698b9dcf9323/default_medium_avatar.png"
 
 
 def generate_promo_code(length=7):
