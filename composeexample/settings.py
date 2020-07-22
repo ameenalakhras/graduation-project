@@ -241,14 +241,11 @@ if USE_S3 or USE_AWS_FOR_OFFLINE_USAGE:
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{PUBLIC_MEDIA_LOCATION}/'
     # s3 private media settings
     PRIVATE_MEDIA_LOCATION = 'private'
-    if USE_S3:
-        STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    else:
-        STATICFILES_STORAGE = f'{PROJECT_MAIN_APP_NAME}.storage_backends.StaticStorage'
-        # s3 public media settings
-        DEFAULT_FILE_STORAGE = f'{PROJECT_MAIN_APP_NAME}.storage_backends.PublicMediaStorage'
-        # s3 private media settings
-        PRIVATE_FILE_STORAGE = f'{PROJECT_MAIN_APP_NAME}.storage_backends.PrivateMediaStorage'
+    STATICFILES_STORAGE = f'{PROJECT_MAIN_APP_NAME}.storage_backends.StaticStorage'
+    # s3 public media settings
+    DEFAULT_FILE_STORAGE = f'{PROJECT_MAIN_APP_NAME}.storage_backends.PublicMediaStorage'
+    # s3 private media settings
+    PRIVATE_FILE_STORAGE = f'{PROJECT_MAIN_APP_NAME}.storage_backends.PrivateMediaStorage'
 else:
     STATIC_URL = '/static/'
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
