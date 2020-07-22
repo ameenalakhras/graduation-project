@@ -60,6 +60,7 @@ class ClassRoomViewSet(ClassRoomViewSetRoot):
     # OnlyEnrolled doesn't work on Post requests ( because its function is has_object_permission)
     # so it won't work on enroll function and it will only work on destroy function
     permission_classes = [IsAuthenticated, OnlyEnrolled, OwnerEditOnly]
+    queryset = ClassRoom.objects.filter(deleted=False)
 
     def destroy(self, request, *args, **kwargs):
         # if the request is coming from the owner of the classroom

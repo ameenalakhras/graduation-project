@@ -75,7 +75,7 @@ class TaskSolutionInfo(SoftDeleteModel):
 class TaskSolution(SoftDeleteModel):
     accepted = models.BooleanField(null=True)
     solutionInfo = models.ManyToManyField(TaskSolutionInfo, blank=True, related_name="task_main_model")
-    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="students")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     class Meta:

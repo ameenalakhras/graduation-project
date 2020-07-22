@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo  # , ClassRoomTeacher
+from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo, \
+    TaskSolution  # , ClassRoomTeacher
 from main.serializers import soft_delete_fields, AttachmentSerializer
 
 from authentication.serializers import UserSerializer
@@ -75,33 +76,8 @@ class PostUpdateSerializer(serializers.ModelSerializer):
 
 
 # the task serializer should make sure it's a teacher who is making the task
-class TaskSerializer(serializers.ModelSerializer):
-    user = serializers.HiddenField(
-        default=serializers.CurrentUserDefault(),
-    )
-    user_info = UserSerializer(source="user", read_only=True)
-    attachments_info = AttachmentSerializer(source="attachments", read_only=True, many=True)
-
-    class Meta:
-        model = Task
-        exclude = soft_delete_fields
 
 
-
-class ClassRoomSerializer(serializers.ModelSerializer):
-    user = serializers.HiddenField(
-        default=serializers.CurrentUserDefault(),
-    )
-    user_info = UserSerializer(source="user", read_only=True)
-    student_objects = UserSerializer(source="students", many=True, read_only=True)
-    student_requests_objects = UserSerializer(source="student_requests", many=True, read_only=True)
-    posts = PostSerializer(source="class_posts", many=True, read_only=True)
-    material = MaterialSerializer(source="classroom_material", many=True, read_only=True)
-    classroom_tasks_info = TaskSerializer(source="classroom_tasks", many=True, read_only=True)
-
-    class Meta:
-        model = ClassRoom
-        exclude = soft_delete_fields + ("students", "student_requests")
 
 
 class EditClassRoomSerializer(serializers.ModelSerializer):
@@ -123,7 +99,7 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
 class TaskSolutionInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaskSolutionInfo
-        fields = ("attachment", "notes", "id")
+        fields = ("notes", "id")
 
 
 class TaskSolutionInfoUpdateSerializer(serializers.ModelSerializer):
@@ -134,3 +110,40 @@ class TaskSolutionInfoUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaskSolutionInfo
         fields = ("accepted", )
+
+
+class TaskSolutionSerializer(serializers.ModelSerializer):
+    solutionInfo = TaskSolutionInfoSerializer()
+
+    class Meta:
+        model = TaskSolution
+        fields = "__all__"
+
+
+class TaskSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+    user_info = UserSerializer(source="user", read_only=True)
+    attachments_info = AttachmentSerializer(source="attachments", read_only=True, many=True)
+    solutions = TaskSolutionInfoSerializer(source="students")
+
+    class Meta:
+        model = Task
+        exclude = soft_delete_fields
+
+
+class ClassRoomSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+    user_info = UserSerializer(source="user", read_only=True)
+    student_objects = UserSerializer(source="students", many=True, read_only=True)
+    student_requests_objects = UserSerializer(source="student_requests", many=True, read_only=True)
+    posts = PostSerializer(source="class_posts", many=True, read_only=True)
+    material = MaterialSerializer(source="classroom_material", many=True, read_only=True)
+    classroom_tasks_info = TaskSerializer(source="classroom_tasks", many=True, read_only=True)
+
+    class Meta:
+        model = ClassRoom
+        exclude = soft_delete_fields + ("students", "student_requests")
