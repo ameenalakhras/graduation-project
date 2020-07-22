@@ -23,7 +23,7 @@ from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
 
 
 class ClassRoomViewSetRoot(viewsets.ModelViewSet):
-    queryset = ClassRoom.objects.filter(deleted=False)
+    queryset = ClassRoom.objects.filter()
     serializer_class = ClassRoomSerializer
     permission_classes = [IsAuthenticated, OnlyEnrolled, OnlyTeacherCreates]
 
@@ -33,11 +33,11 @@ class ClassRoomViewSetRoot(viewsets.ModelViewSet):
         user = self.request.user
         user_group = self.request.user.groups.first()
         if user_group == students_group:
-            queryset = user.student_classrooms.filter(archived=False, deleted=False)
+            queryset = user.student_classrooms.filter(archived=False)
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data)
         elif user_group == teachers_group:
-            queryset = user.teacher_classrooms.filter(archived=False, deleted=False)
+            queryset = user.teacher_classrooms.filter(archived=False)
             serializer = self.get_serializer(queryset, many=True)
             return Response(serializer.data)
         else:
@@ -60,7 +60,7 @@ class ClassRoomViewSet(ClassRoomViewSetRoot):
     # OnlyEnrolled doesn't work on Post requests ( because its function is has_object_permission)
     # so it won't work on enroll function and it will only work on destroy function
     permission_classes = [IsAuthenticated, OnlyEnrolled, OwnerEditOnly]
-    queryset = ClassRoom.objects.filter(deleted=False)
+    queryset = ClassRoom.objects.filter()
 
     def destroy(self, request, *args, **kwargs):
         # if the request is coming from the owner of the classroom
@@ -130,7 +130,7 @@ class ClassRoomViewSet(ClassRoomViewSetRoot):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comments.objects.filter(deleted=False)
+    queryset = Comments.objects.filter()
     serializer_class = CommentsSerializer
     permission_classes = [IsAuthenticated, OwnerOnlyDeletesAndEdits]
 
@@ -161,7 +161,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class TaskViewSetRoot(viewsets.ModelViewSet):
-    queryset = Task.objects.filter(deleted=False)
+    queryset = Task.objects.filter()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated, OnlyTeacherCreates]
 
@@ -180,7 +180,7 @@ class TaskViewSetRoot(viewsets.ModelViewSet):
 
 
 class TaskViewSet(viewsets.ModelViewSet):
-    queryset = Task.objects.filter(deleted=False)
+    queryset = Task.objects.filter()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated, OwnerOnlyDeletesAndEdits, OnlyEnrolledRelated]
 
@@ -194,7 +194,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 
 class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
-    queryset = TaskSolutionInfo.objects.filter(deleted=False)
+    queryset = TaskSolutionInfo.objects.filter()
     serializer_class = TaskSolutionInfoSerializer
     permission_classes = [IsAuthenticated]
 
@@ -284,7 +284,7 @@ class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
 
 
 class PostViewSetRoot(viewsets.ModelViewSet):
-    queryset = Post.objects.filter(deleted=False)
+    queryset = Post.objects.filter()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated, OwnerEditOnly]
 
@@ -298,7 +298,7 @@ class PostViewSetRoot(viewsets.ModelViewSet):
 
 
 class PostViewSet(PostViewSetRoot):
-    queryset = Post.objects.filter(deleted=False)
+    queryset = Post.objects.filter()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated, OwnerEditOnly, OnlyEnrolledRelated, OwnerAndTeacherDeleteOnly]
 
@@ -312,7 +312,7 @@ class PostViewSet(PostViewSetRoot):
 
 
 class MaterialViewSetRoot(viewsets.ModelViewSet):
-    queryset = Material.objects.filter(deleted=False)
+    queryset = Material.objects.filter()
     serializer_class = MaterialSerializer
     permission_classes = [IsAuthenticated, OnlyTeacherCreates]
 
@@ -333,7 +333,7 @@ class MaterialViewSetRoot(viewsets.ModelViewSet):
 
 
 class MaterialViewSet(viewsets.ModelViewSet):
-    queryset = Material.objects.filter(deleted=False)
+    queryset = Material.objects.filter()
     serializer_class = MaterialSerializer
     permission_classes = [IsAuthenticated, OwnerOnlyDeletesAndEdits]
 

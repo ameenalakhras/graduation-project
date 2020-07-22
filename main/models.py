@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils import timezone
 
+from classroom.utils import default_avatar_img
 from main.choices import ATTACHMENTS_TYPE_CHOICES
 from main.utils import get_avatar_path, get_attchment_path
 
@@ -18,24 +19,26 @@ class BaseModel(models.Model):
         abstract = True
 
 
-class SoftDeleteModel(BaseModel):
-    deleted_at = models.DateTimeField(null=True, blank=True)
-    deleted = models.BooleanField(default=False)
+# class SoftDeleteModel(BaseModel):
+#     deleted_at = models.DateTimeField(null=True, blank=True)
+#     deleted = models.BooleanField(default=False)
+#
+#     def delete(self):
+#         self.deleted = True
+#         self.deleted_at = timezone.now()
+#         super().save()
+#
+#     # telling django that the SoftDeleteModel is an abstract class
+#     class Meta:
+#         abstract = True
 
-    def delete(self):
-        self.deleted = True
-        self.deleted_at = timezone.now()
-        super().save()
 
-    # telling django that the SoftDeleteModel is an abstract class
-    class Meta:
-        abstract = True
-
-
-
-class UserProfile(SoftDeleteModel):
+class UserProfile(BaseModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
-    avatar = models.ImageField(upload_to=get_avatar_path, null=True)
+    avatar = models.ImageField(
+        upload_to=get_avatar_path, default=default_avatar_img(),
+        max_length=1000, null=True
+    )
 
     def __str__(self):
         return self.user.username
@@ -50,7 +53,7 @@ class Notification(BaseModel):
     received_at = models.DateTimeField(null=True)
 
 
-class Attachment(SoftDeleteModel):
+class Attachment(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     file = models.FileField(upload_to=get_attchment_path)

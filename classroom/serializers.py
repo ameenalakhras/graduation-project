@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo, \
     TaskSolution  # , ClassRoomTeacher
-from main.serializers import soft_delete_fields, AttachmentSerializer
+from main.serializers import AttachmentSerializer
 
 from authentication.serializers import UserSerializer
 
@@ -15,7 +15,7 @@ class MaterialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Material
-        exclude = soft_delete_fields + ("classroom",)
+        exclude =  ("classroom",)
 
 
 class ClassroomMaterialSerializer(MaterialSerializer):
@@ -25,7 +25,7 @@ class ClassroomMaterialSerializer(MaterialSerializer):
     """
     class Meta:
         model = Material
-        exclude = soft_delete_fields + ("id", )
+        exclude =  ("id", )
 
 
 class EditMaterialSerializer(MaterialSerializer):
@@ -46,7 +46,7 @@ class CommentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comments
-        exclude = soft_delete_fields
+        fields = "__all__"
 
 
 class CommentsUpdateSerializer(serializers.ModelSerializer):
@@ -65,7 +65,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        exclude = soft_delete_fields
+        fields = "__all__"
 
 
 class PostUpdateSerializer(serializers.ModelSerializer):
@@ -87,7 +87,7 @@ class EditClassRoomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClassRoom
-        exclude = soft_delete_fields + ("students", "student_requests", "promo_code", "archived", )
+        exclude =  ("students", "student_requests", "promo_code", "archived", )
 
 
 class TaskUpdateSerializer(serializers.ModelSerializer):
@@ -130,7 +130,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        exclude = soft_delete_fields
+        fields = "__all__"
 
 
 class ClassRoomSerializer(serializers.ModelSerializer):
@@ -146,4 +146,4 @@ class ClassRoomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClassRoom
-        exclude = soft_delete_fields + ("students", "student_requests")
+        exclude =  ("students", "student_requests")

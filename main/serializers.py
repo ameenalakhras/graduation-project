@@ -4,7 +4,6 @@ from rest_framework import serializers
 from main.choices import ATTACHMENTS_TYPE_CHOICES
 from main.models import UserProfile, Attachment#, Notification
 
-soft_delete_fields = ('deleted_at','deleted')
 
 
 class ChoicesSerializerField(serializers.SerializerMethodField):
@@ -39,7 +38,7 @@ class AttachmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Attachment
-        exclude = soft_delete_fields
+        fields = "__all__"
 
 
 class AttachmentUpdateSerializer(serializers.ModelSerializer):

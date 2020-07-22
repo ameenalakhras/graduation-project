@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 import datetime
 
 class UserProfileViewSet(viewsets.ModelViewSet):
-    queryset = UserProfile.objects.filter(deleted=False)
+    queryset = UserProfile.objects.filter()
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated, OwnerEditOnly]
     # prevented "post" requests (making profile isn't allowed since it's auto generated)
@@ -23,7 +23,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
 
 class AttachmentViewSet(viewsets.ModelViewSet):
-    queryset = Attachment.objects.filter(deleted=False)
+    queryset = Attachment.objects.filter()
     serializer_class = AttachmentSerializer
     permission_classes = [IsAuthenticated, OwnerEditOnly]
 

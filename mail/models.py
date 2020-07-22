@@ -2,10 +2,10 @@ from django.db import models
 from django.conf import settings
 
 from mail.email_purpose import EMAIL_TYPE_CHOICES
-from main.models import SoftDeleteModel
+from main.models import BaseModel
 
 
-class Mail(SoftDeleteModel):
+class Mail(BaseModel):
     sender_email = models.EmailField()
     receiver_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="receiver_users")
     receivers_emails_txt = models.CharField(max_length=500)
