@@ -50,7 +50,8 @@ class Comments(SoftDeleteModel):
 class Material(SoftDeleteModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="user_material")
     classroom = models.ManyToManyField(ClassRoom, related_name="classroom_material", blank=True)
-    file = models.FileField(max_length=1000)
+    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE, related_name="material_attachment", null=True, blank=True)
+    file = models.FileField(max_length=1000, null=True, blank=True, default=f"{settings.MEDIA_ROOT}/users/3/attachments/99891ce2-eecf-4807-b3a2-ff8d4cdb5ff2/graduation_project_glob_TsgYD41.json")
 
 
 class Task(SoftDeleteModel):
@@ -60,7 +61,7 @@ class Task(SoftDeleteModel):
     title = models.CharField(max_length=50)
     content = models.TextField()
     attachments = models.ManyToManyField(Attachment, blank=True)
-    classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
+    classroom = models.ForeignKey(ClassRoom, on_delete=models.CASCADE, related_name="classroom_tasks")
     accept_solutions = models.BooleanField(default=True)
     accept_solutions_due = models.DateTimeField(null=True)
 
