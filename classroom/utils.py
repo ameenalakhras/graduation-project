@@ -17,11 +17,11 @@ def get_classroom_bg_path(instance, filename):
 
 
 def default_class_logo_img():
-    return 'https://image.shutterstock.com/image-vector/shield-letter-s-logosafesecureprotection-logomodern-260nw-633031571.jpg'
+    return 'images/users/3/classroom/logos/eae50b1d-8ffc-41f8-b65d-aa51ebfd14d6/informationSec.jpg'
 
 
 def default_class_background_img():
-    return 'https://3.bp.blogspot.com/-3OZFSKvugss/VzH53PuahJI/AAAAAAAABdc/rGczv9JzFFUH1wBMx7gTtJBNl44GjaeQwCLcB/s1600/desain%2Bbackground%2Bpermainan%2Bwarna%2B6.jpg'
+    return 'users/3/classroom/backgrounds/676c76b5-f361-46ce-a926-c3366855100f/header_classroom_default.png'
 
 
 def generate_promo_code(length=7):

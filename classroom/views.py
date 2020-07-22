@@ -11,7 +11,8 @@ from django.shortcuts import get_object_or_404
 
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer, \
     PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, EditMaterialSerializer, CommentsUpdateSerializer, \
-    PostUpdateSerializer, TaskUpdateSerializer, TaskSolutionInfoSerializer, TaskSolutionInfoUpdateSerializer
+    PostUpdateSerializer, TaskUpdateSerializer, TaskSolutionInfoSerializer, TaskSolutionInfoUpdateSerializer, \
+    EditClassRoomSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo, TaskSolution
 from classroom.utils import generate_promo_code
 from classroom.views_utils import check_user_enrolled, check_classroom_owner, check_attachment_owner, \
@@ -117,6 +118,14 @@ class ClassRoomViewSet(ClassRoomViewSetRoot):
                     {"message": "class not found"},
                     status=status.HTTP_404_NOT_FOUND
                 )
+
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+
+        if self.request.method == 'PATCH':
+            serializer_class = EditClassRoomSerializer
+
+        return serializer_class
 
 
 class CommentViewSet(viewsets.ModelViewSet):

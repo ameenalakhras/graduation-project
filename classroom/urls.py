@@ -19,7 +19,9 @@ urlpatterns = [
          name="material"
          ),
     path('classrooms/', ClassRoomViewSetRoot.as_view(actions=list_create), name="classroom_main"),
-    path('classrooms/<int:pk>', ClassRoomViewSet.as_view(actions=retrieve_destroy),
+    path('classrooms/<int:pk>', ClassRoomViewSet.as_view(
+        actions={"get": "retrieve", "delete": "destroy", "patch": "partial_update"}
+    ),
          name="classroom_detail"
          ),
     path('classrooms/<slug:promo_code>/enroll',
