@@ -6,6 +6,6 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 
 class MailViewSet(viewsets.ModelViewSet):
-    queryset = Mail.objects.filter(deleted=False)
+    queryset = Mail.objects.filter()
     serializer_class = MailSerializer
     permission_classes = [IsAuthenticated, IsAdminUser]
