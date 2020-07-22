@@ -8,7 +8,7 @@ from django.contrib.auth.models import Group
 
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
-from authentication.models import User
+from authentication.models import User, CustomToken
 from main.serializers import UserProfileSerializer
 
 
@@ -112,3 +112,38 @@ class TokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Token
         fields = ("auth_token", "created", "user")
+
+
+class CustomTokenSerializer(serializers.ModelSerializer):
+    key = serializers.ReadOnlyField()
+
+    class Meta:
+        model = CustomToken
+        fields = ("key", "user", "_type")
+
+
+class CustomTokenRetrieveDestroySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CustomToken
+        fields = ("key", )
+
+
+# serializers.Serializer doesn't take Meta which makes it perfect for such cases (without models)
+class ResetPasswordSerializer(serializers.Serializer):
+
+    password = serializers.CharField(required=True)
+
+    default_error_messages = {
+        'invalid_password': _('You need a stronger Password'),
+    }
+
+    def validate(self, attrs):
+        # make sure the password is strong enough through django validation
+        try:
+            password_validation.validate_password(attrs.get('password'))
+        except exceptions.ValidationError as e:
+            raise serializers.ValidationError(self.error_messages['invalid_password'])
+        else:
+            return attrs
+

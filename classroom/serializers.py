@@ -27,7 +27,7 @@ class ClassroomMaterialSerializer(MaterialSerializer):
         exclude = soft_delete_fields + ("id", )
 
 
-class PutMaterialSerializer(MaterialSerializer):
+class EditMaterialSerializer(MaterialSerializer):
     """
     the same material serializer but this one is for edit requests (put), it excludes the user
     since changing him will change the authority for the material owner himself.

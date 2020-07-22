@@ -3,7 +3,6 @@ from mail.views import MailViewSet
 
 router = routers.DefaultRouter()
 
-router.register('mail', MailViewSet)
-# router.register('permission', PermissionViewSet)
+router.register('mails', MailViewSet)
 
 urlpatterns = router.urls
