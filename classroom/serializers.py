@@ -10,7 +10,7 @@ class MaterialSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
-    uploader = UserSerializer(source="user", read_only=True)
+    user_info = UserSerializer(source="user", read_only=True)
 
     class Meta:
         model = Material
@@ -41,7 +41,7 @@ class CommentsSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
-    commenter = UserSerializer(source="user", read_only=True)
+    user_info = UserSerializer(source="user", read_only=True)
 
     class Meta:
         model = Comments
@@ -60,6 +60,7 @@ class PostSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
+    user_info = UserSerializer(source="user", read_only=True)
 
     class Meta:
         model = Post
@@ -77,6 +78,7 @@ class ClassRoomSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
+    user_info = UserSerializer(source="user", read_only=True)
     student_objects = UserSerializer(source="students", many=True, read_only=True)
     student_requests_objects = UserSerializer(source="student_requests", many=True, read_only=True)
     posts = PostSerializer(source="class_posts", many=True, read_only=True)
@@ -92,6 +94,7 @@ class TaskSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
+    user_info = UserSerializer(source="user", read_only=True)
 
     class Meta:
         model = Task
