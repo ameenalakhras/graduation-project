@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import Group
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 from rest_framework import serializers, status
 from rest_framework.authtoken.models import Token
@@ -31,6 +32,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    default_error_messages = {
+        'weak_password': _('You need a stronger Password'),
+    }
 
     class Meta:
         model = User
@@ -38,9 +42,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         try:
+            import ipdb;ipdb.set_trace()
             validate_password(attrs['password'])
-        except exceptions.ValidationError as e:
-            raise exceptions.ValidationError(e)
+        except DjangoValidationError as e:
+            raise CustomValidationError(
+                detail=self.error_messages['weak_password'],
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
         else:
             attrs['password'] = make_password(attrs['password'])
             return attrs
@@ -63,16 +71,24 @@ class UserLoginSerializer(serializers.Serializer):
         try:
             self.user = User.objects.get(username=attrs.get("username"))
         except User.DoesNotExist:
-            raise serializers.ValidationError(self.error_messages['invalid_credentials'])
+            raise CustomValidationError(
+                detail=self.error_messages['invalid_credentials'],
+                status_code=status.HTTP_401_UNAUTHORIZED
+            )
         else:
             if not self.user.is_active:
-                raise serializers.ValidationError(self.error_messages['inactive_account'])
-
+                raise CustomValidationError(
+                    detail=self.error_messages['inactive_account'],
+                    status_code=status.HTTP_401_UNAUTHORIZED
+                )
             self.user = authenticate(username=attrs.get("username"), password=attrs.get('password'))
             if self.user:
                 return attrs
             else:
-                raise serializers.ValidationError(self.error_messages['invalid_credentials'])
+                raise CustomValidationError(
+                    detail=self.error_messages['invalid_credentials'],
+                    status_code=status.HTTP_401_UNAUTHORIZED
+                )
 
 
 class UserPasswordChangeSerializer(serializers.Serializer):
@@ -96,15 +112,21 @@ class UserPasswordChangeSerializer(serializers.Serializer):
         # make sure the password is strong enough through django validation
         try:
             password_validation.validate_password(attrs.get('new_password'))
-        except exceptions.ValidationError as e:
-            raise serializers.ValidationError(self.error_messages['invalid_new_password'])
+        except DjangoValidationError as e:
+            raise CustomValidationError(
+                detail=self.error_messages['invalid_new_password'],
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
         self.user = attrs.get("user")
         valid_password = self.user.check_password(raw_password=attrs.get("old_password"))
         if valid_password:
             return attrs
         else:
-            raise serializers.ValidationError(self.error_messages['invalid_old_password'])
+            raise CustomValidationError(
+                detail=self.error_messages['invalid_old_password'],
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
 
 class CustomTokenSerializer(serializers.ModelSerializer):
@@ -135,8 +157,11 @@ class ResetPasswordSerializer(serializers.Serializer):
         # make sure the password is strong enough through django validation
         try:
             password_validation.validate_password(attrs.get('password'))
-        except exceptions.ValidationError as e:
-            raise serializers.ValidationError(self.error_messages['invalid_password'])
+        except DjangoValidationError as e:
+            raise CustomValidationError(
+                detail=self.error_messages['invalid_password'],
+                status_code=status.HTTP_401_UNAUTHORIZED
+            )
         else:
             return attrs
 
