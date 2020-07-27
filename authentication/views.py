@@ -52,9 +52,10 @@ class UserLoginAPIView(GenericAPIView):
                 status=status.HTTP_200_OK,
             )
         else:
+            import ipdb;ipdb.set_trace()
             return Response(
                 data=serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
 

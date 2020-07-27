@@ -15,7 +15,7 @@ class MaterialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Material
-        exclude = ("classroom",)
+        exclude = ("classroom", "file")
 
 
 class ClassroomMaterialSerializer(MaterialSerializer):
@@ -25,7 +25,7 @@ class ClassroomMaterialSerializer(MaterialSerializer):
     """
     class Meta:
         model = Material
-        fields = "__all__"
+        exclude = ("file", )
 
 
 class EditMaterialSerializer(MaterialSerializer):
