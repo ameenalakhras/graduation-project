@@ -29,6 +29,24 @@ class User(AbstractUser):
         pass
 
 
+class FCMToken(BaseModel):
+    """
+    token for firebase cloud messaging (used for android push notifications)
+    """
+
+    key = models.CharField(_("Key"), max_length=100, unique=True)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, related_name='fcm_token',
+        on_delete=models.CASCADE
+    )
+
+
+class PushMessages(BaseModel):
+    user = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='push_messages')
+    title = models.CharField(max_length=50)
+    body = models.CharField(max_length=250)
+
+
 class CustomToken(BaseModel):
     """
     The default token model for password rest / sign up email validation.

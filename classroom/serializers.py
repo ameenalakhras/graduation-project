@@ -15,7 +15,7 @@ class MaterialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Material
-        exclude =  ("classroom",)
+        exclude = ("classroom",)
 
 
 class ClassroomMaterialSerializer(MaterialSerializer):
@@ -25,7 +25,7 @@ class ClassroomMaterialSerializer(MaterialSerializer):
     """
     class Meta:
         model = Material
-        exclude =  ("id", )
+        fields = "__all__"
 
 
 class EditMaterialSerializer(MaterialSerializer):
@@ -35,7 +35,7 @@ class EditMaterialSerializer(MaterialSerializer):
     """
     class Meta:
         model = Material
-        fields = ("file", )
+        fields = ('id', "attachment")
 
 
 class CommentsSerializer(serializers.ModelSerializer):
@@ -53,7 +53,7 @@ class CommentsUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comments
-        fields = ('content', )
+        fields = ('id', 'content')
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -72,12 +72,7 @@ class PostUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ("content", )
-
-
-# the task serializer should make sure it's a teacher who is making the task
-
-
+        fields = ("id", "content")
 
 
 class EditClassRoomSerializer(serializers.ModelSerializer):
@@ -87,13 +82,13 @@ class EditClassRoomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ClassRoom
-        exclude =  ("students", "student_requests", "promo_code", "archived", )
+        exclude = ("id", "students", "student_requests", "promo_code", "archived", )
 
 
 class TaskUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = ("title", "content", "attachments", "accept_solutions", "accept_solutions_due")
+        fields = ("id", "title", "content", "attachments", "accept_solutions", "accept_solutions_due")
 
 
 class TaskSolutionInfoSerializer(serializers.ModelSerializer):

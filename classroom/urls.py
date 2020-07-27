@@ -24,6 +24,23 @@ urlpatterns = [
     ),
          name="classroom_detail"
          ),
+    path('classrooms/<int:pk>/unroll', ClassRoomViewSet.as_view(
+        actions={"post": "unroll"}
+        )
+    ),
+    path('classrooms/<int:pk>/accept', ClassRoomViewSet.as_view(
+        actions={"post": "accept"}
+        )
+    ),
+    path('classrooms/<int:pk>/reject', ClassRoomViewSet.as_view(
+        actions={"post": "reject"}
+        )
+    ),
+    path('classrooms/<int:pk>/add_student', ClassRoomViewSet.as_view(
+        actions={"post": "add_student"}
+        )
+    ),
+
     path('classrooms/<slug:promo_code>/enroll',
          ClassRoomViewSet.as_view(actions={"post": "enroll"}), name="classroom_enroll"
          ),

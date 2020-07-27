@@ -3,12 +3,14 @@ from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import ugettext_lazy as _
-from django.core import exceptions
 from django.contrib.auth.models import Group
 
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.authtoken.models import Token
-from authentication.models import User, CustomToken
+from rest_framework.exceptions import ValidationError
+
+from authentication.errors import CustomValidationError
+from authentication.models import User, CustomToken, FCMToken, PushMessages
 from main.serializers import UserProfileSerializer
 
 
@@ -105,15 +107,6 @@ class UserPasswordChangeSerializer(serializers.Serializer):
             raise serializers.ValidationError(self.error_messages['invalid_old_password'])
 
 
-class TokenSerializer(serializers.ModelSerializer):
-    auth_token = serializers.CharField(source='key')
-    user = UserSerializer()
-
-    class Meta:
-        model = Token
-        fields = ("auth_token", "created", "user")
-
-
 class CustomTokenSerializer(serializers.ModelSerializer):
     key = serializers.ReadOnlyField()
 
@@ -147,3 +140,53 @@ class ResetPasswordSerializer(serializers.Serializer):
         else:
             return attrs
 
+
+class FCMTokenSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+
+    def is_valid(self, *args, **kwargs):
+        try:
+            data = self.run_validation(self.initial_data)
+        except ValidationError as e:
+            # if it's the error that the key is unique
+            if e.get_codes()["key"][0] == "unique":
+                raise CustomValidationError("key already exists (duplicated key)", status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            else:
+                raise e
+        else:
+
+            try:
+                fcm_token_exists = data.get("user").fcm_token
+                raise CustomValidationError("user already has a key.", status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+            except User.fcm_token.RelatedObjectDoesNotExist:
+                return super(FCMTokenSerializer, self).is_valid(*args, **kwargs)
+
+    class Meta:
+        model = FCMToken
+        fields = "__all__"
+
+
+class FCMTokenUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FCMToken
+        fields = ("id", "key")
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    auth_token = serializers.CharField(source='key')
+    fcm_token = FCMTokenSerializer(source="user.fcm_token")
+    user = UserSerializer()
+
+    class Meta:
+        model = Token
+        fields = ("auth_token", "created", "user", "fcm_token")
+
+
+class PushMessagesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PushMessages
+        exclude = ("user", )

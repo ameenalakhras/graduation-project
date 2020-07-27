@@ -7,12 +7,12 @@ from rest_framework.permissions import IsAuthenticated
 
 
 class MediaViewSet(viewsets.ModelViewSet):
-    queryset = Media.objects.filter()
+    queryset = Media.objects.all().order_by("-created_at")
     serializer_class = MediaSerializer
     permission_classes = [IsAuthenticated, OwnerEditOnly]
 
 
 class CourseViewSet(viewsets.ModelViewSet):
-    queryset = Course.objects.filter()
+    queryset = Course.objects.all().order_by("-created_at")
     serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated, OwnerEditOnly]

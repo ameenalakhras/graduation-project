@@ -5,13 +5,15 @@ from rest_framework.authtoken.models import Token
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.generics import RetrieveDestroyAPIView, CreateAPIView, UpdateAPIView
+from rest_framework.generics import RetrieveDestroyAPIView, CreateAPIView, UpdateAPIView, ListAPIView
 
 from authentication.choices import TOKEN_TYPES_DICT
 from authentication.serializers import UserRegistrationSerializer, UserLoginSerializer, TokenSerializer, \
-    UserPasswordChangeSerializer, CustomTokenSerializer, ResetPasswordSerializer
+    UserPasswordChangeSerializer, CustomTokenSerializer, ResetPasswordSerializer, PushMessagesSerializer
 
-from authentication.models import User, CustomToken
+from authentication.models import User, CustomToken, FCMToken, PushMessages
+from authentication.serializers import FCMTokenSerializer, FCMTokenUpdateSerializer
+from composeexample.permissions import OwnerEditOnly
 from mail.mail_service_utils import send_reset_password_email
 
 
@@ -174,3 +176,24 @@ class CustomTokenRetrieveDestroyUpdateAPIView(RetrieveDestroyAPIView, UpdateAPIV
         instance.destruction_date = timezone.now()
         instance.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class FCMTokenCreateAPIView(CreateAPIView):
+    queryset = FCMToken.objects.all()
+    permission_classes = []
+    serializer_class = FCMTokenSerializer
+
+
+class FCMTokenUpdateAPIView(UpdateAPIView):
+    queryset = FCMToken.objects.all()
+    permission_classes = [OwnerEditOnly]
+    serializer_class = FCMTokenUpdateSerializer
+
+
+class PushMessagesListApiView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PushMessagesSerializer
+
+    def list(self, request, *args, **kwargs):
+        self.queryset = request.user.push_messages.all().order_by("-created_at")
+        return super(PushMessagesListApiView, self).list(request, *args, **kwargs)

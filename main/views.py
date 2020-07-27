@@ -23,7 +23,7 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
 
 class AttachmentViewSet(viewsets.ModelViewSet):
-    queryset = Attachment.objects.filter()
+    queryset = Attachment.objects.all().order_by("-created_at")
     serializer_class = AttachmentSerializer
     permission_classes = [IsAuthenticated, OwnerEditOnly]
 
@@ -36,7 +36,7 @@ class AttachmentViewSet(viewsets.ModelViewSet):
         return serializer_class
 
     def list(self, request, *args, **kwargs):
-        self.queryset = self.get_queryset().filter(user=request.user)
+        self.queryset = self.get_queryset().filter(user=request.user).order_by("-created_at")
         return super(AttachmentViewSet, self).list(request, *args, **kwargs)
 # class SettingsOptionsSet(viewsets.ModelViewSet):
 #     queryset = SettingsOptions.objects.all()
