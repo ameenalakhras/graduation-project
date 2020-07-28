@@ -132,7 +132,7 @@ class ClassRoomViewSet(ClassRoomViewSetRoot):
     @check_classroom_owner
     def unroll(self, request, *args, **kwargs):
         """
-        unroll students from classroom by classroom owner
+        classroom owner unrolls students from classroom.
         """
         obj = self.get_object()
         user_id = request.data.get("student", None)
@@ -199,24 +199,20 @@ class CommentViewSet(viewsets.ModelViewSet):
         if self.request.method == 'PATCH':
             serializer_class = CommentsUpdateSerializer
 
+        elif self.request.method == 'GET':
+            serializer_class = PostListSerializer
+
         return serializer_class
 
+    @check_enrolled_related(model=Post)
     def create(self, request, *args, **kwargs):
+        # all the mutable code should be replaced with
+        # having the post id in the request data itself
         post_pk = kwargs["pk"]
-        post = Post.objects.get(id=post_pk)
-        enrolled_in_classroom = OnlyEnrolledRelated().has_object_permission(request, post, post)
-        if enrolled_in_classroom:
-            request.data._mutable = True
-            request.data["post"] = post_pk
-            request.data._mutable = False
-            return super().create(request, *args, **kwargs)
-        else:
-            # replace this with a class for this sentence (it exists in django rest somewhere as
-            # forbidden permission message
-            return Response(
-                data={"detail": "You do not have permission to perform this action."},
-                status=status.HTTP_403_FORBIDDEN
-            )
+        request.data._mutable = True
+        request.data["post"] = post_pk
+        request.data._mutable = False
+        return super().create(request, *args, **kwargs)
 
     @check_enrolled_related(model=Post)
     def list(self, request, *args, **kwargs):
@@ -238,6 +234,7 @@ class TaskViewSetRoot(viewsets.ModelViewSet):
         request.data._mutable = False
         return super(TaskViewSetRoot, self).create(request, *args, **kwargs)
 
+    @check_user_enrolled
     def list(self, request, *args, **kwargs):
         classroom_pk = kwargs.get("pk", None)
         self.queryset = self.get_queryset().filter(classroom=classroom_pk).order_by("-created_at")

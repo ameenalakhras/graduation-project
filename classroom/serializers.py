@@ -81,7 +81,7 @@ class PostListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        exclude = "classroom"
+        exclude = ("classroom", )
 
 
 class PostUpdateSerializer(serializers.ModelSerializer):
