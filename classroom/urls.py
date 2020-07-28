@@ -1,7 +1,8 @@
 from django.urls import path
 
 from classroom.views import ClassRoomViewSet, CommentViewSet, TaskViewSet, PostViewSet, MaterialViewSet, \
-    ClassRoomViewSetRoot, PostViewSetRoot, MaterialViewSetRoot, TaskViewSetRoot, TaskSolutionInfoViewSet
+    ClassRoomViewSetRoot, PostViewSetRoot, MaterialViewSetRoot, TaskViewSetRoot, TaskSolutionInfoViewSet, \
+    UncleanClassRoomViewSetRoot
 
 list_create = {"get": "list", "post": "create"}
 all_actions = {"get": "retrieve", "delete": "destroy", "post": "create", "patch": "partial_update"}
@@ -19,6 +20,7 @@ urlpatterns = [
          name="material"
          ),
     path('classrooms/', ClassRoomViewSetRoot.as_view(actions=list_create), name="classroom_main"),
+    path('unclean_classrooms/', UncleanClassRoomViewSetRoot.as_view(actions=list_create), name="classroom_main"),
     path('classrooms/<int:pk>', ClassRoomViewSet.as_view(
         actions={"get": "retrieve", "delete": "destroy", "patch": "partial_update"}
     ),
@@ -46,7 +48,7 @@ urlpatterns = [
          ),
 
     path('posts/<int:pk>/comments/', CommentViewSet.as_view(
-        actions={"post": "create"}),
+        actions={"post": "create", "get": "list"}),
          name="comment"
          ),
     path('comments/<int:pk>/', CommentViewSet.as_view(
@@ -60,7 +62,9 @@ urlpatterns = [
         actions={"get": "retrieve", "delete": "destroy", "patch": "partial_update"}
     ), name="task"),
 
-    path('classrooms/<int:pk>/posts/', PostViewSetRoot.as_view(actions={"post": "create"}), name="post"),
+    path('classrooms/<int:pk>/posts/', PostViewSetRoot.as_view(
+        actions={"post": "create", "get": "list"}
+    ), name="post"),
     path('posts/<int:pk>/', PostViewSet.as_view(
         actions={"get": "retrieve", "delete": "destroy", "patch": "partial_update"}),
          name="post"

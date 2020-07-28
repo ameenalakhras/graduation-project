@@ -13,7 +13,7 @@ from authentication.models import User
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer, \
     PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, EditMaterialSerializer, CommentsUpdateSerializer, \
     PostUpdateSerializer, TaskUpdateSerializer, TaskSolutionInfoSerializer, TaskSolutionInfoUpdateSerializer, \
-    EditClassRoomSerializer
+    EditClassRoomSerializer, PostListSerializer, UncleanClassRoomSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo, TaskSolution
 from classroom.utils import generate_promo_code
 from classroom.views_utils import check_user_enrolled, check_classroom_owner, check_attachment_owner, \
@@ -26,6 +26,40 @@ from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
 class ClassRoomViewSetRoot(viewsets.ModelViewSet):
     queryset = ClassRoom.objects.all().order_by("-created_at")
     serializer_class = ClassRoomSerializer
+    permission_classes = [IsAuthenticated, OnlyEnrolled, OnlyTeacherCreates]
+
+    def list(self, request, *args, **kwargs):
+        teachers_group = Group.objects.get(name="teachers")
+        students_group = Group.objects.get(name="students")
+        user = self.request.user
+        user_group = self.request.user.groups.first()
+        if user_group == students_group:
+            queryset = user.student_classrooms.filter(archived=False).order_by("-created_at")
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        elif user_group == teachers_group:
+            queryset = user.teacher_classrooms.filter(archived=False).order_by("-created_at")
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        else:
+            return Response(
+                {"message": "user isn't registered in any group."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def create(self, request, *args, **kwargs):
+        promo_code = generate_promo_code(length=10)
+        user = self.request.user
+        request.data._mutable = True
+        request.data["promo_code"] = promo_code
+        request.data["user"] = user
+        request.data._mutable = False
+        return super().create(request, *args, **kwargs)
+
+
+class UncleanClassRoomViewSetRoot(viewsets.ModelViewSet):
+    queryset = ClassRoom.objects.all().order_by("-created_at")
+    serializer_class = UncleanClassRoomSerializer
     permission_classes = [IsAuthenticated, OnlyEnrolled, OnlyTeacherCreates]
 
     def list(self, request, *args, **kwargs):
@@ -132,7 +166,7 @@ class ClassRoomViewSet(ClassRoomViewSetRoot):
     @check_classroom_owner
     def unroll(self, request, *args, **kwargs):
         """
-        unroll students from classroom by classroom owner
+        classroom owner unrolls students from classroom.
         """
         obj = self.get_object()
         user_id = request.data.get("student", None)
@@ -199,24 +233,26 @@ class CommentViewSet(viewsets.ModelViewSet):
         if self.request.method == 'PATCH':
             serializer_class = CommentsUpdateSerializer
 
+        elif self.request.method == 'GET':
+            serializer_class = PostListSerializer
+
         return serializer_class
 
+    @check_enrolled_related(model=Post)
     def create(self, request, *args, **kwargs):
+        # all the mutable code should be replaced with
+        # having the post id in the request data itself
         post_pk = kwargs["pk"]
-        post = Post.objects.get(id=post_pk)
-        enrolled_in_classroom = OnlyEnrolledRelated().has_object_permission(request, post, post)
-        if enrolled_in_classroom:
-            request.data._mutable = True
-            request.data["post"] = post_pk
-            request.data._mutable = False
-            return super().create(request, *args, **kwargs)
-        else:
-            # replace this with a class for this sentence (it exists in django rest somewhere as
-            # forbidden permission message
-            return Response(
-                data={"detail": "You do not have permission to perform this action."},
-                status=status.HTTP_403_FORBIDDEN
-            )
+        request.data._mutable = True
+        request.data["post"] = post_pk
+        request.data._mutable = False
+        return super().create(request, *args, **kwargs)
+
+    @check_enrolled_related(model=Post)
+    def list(self, request, *args, **kwargs):
+        post_pk = kwargs.get("pk", None)
+        self.queryset = self.queryset.filter(post=post_pk)
+        return super(CommentViewSet, self).list(request, *args, **kwargs)
 
 
 class TaskViewSetRoot(viewsets.ModelViewSet):
@@ -232,6 +268,7 @@ class TaskViewSetRoot(viewsets.ModelViewSet):
         request.data._mutable = False
         return super(TaskViewSetRoot, self).create(request, *args, **kwargs)
 
+    @check_user_enrolled
     def list(self, request, *args, **kwargs):
         classroom_pk = kwargs.get("pk", None)
         self.queryset = self.get_queryset().filter(classroom=classroom_pk).order_by("-created_at")
@@ -354,6 +391,13 @@ class PostViewSetRoot(viewsets.ModelViewSet):
         request.data["classroom"] = classroom_pk
         request.data._mutable = False
         return super(PostViewSetRoot, self).create(request, *args, **kwargs)
+
+    @check_user_enrolled
+    def list(self, request, *args, **kwargs):
+        classroom_pk = kwargs.get("pk", None)
+        self.queryset = self.queryset.filter(classroom=classroom_pk)
+        self.serializer_class = PostListSerializer
+        return super(PostViewSetRoot, self).list(request, *args, **kwargs)
 
 
 class PostViewSet(PostViewSetRoot):

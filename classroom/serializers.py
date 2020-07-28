@@ -12,6 +12,7 @@ class MaterialSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault(),
     )
     user_info = UserSerializer(source="user", read_only=True)
+    attachment_info = AttachmentSerializer(source="attachment", read_only=True)
 
     class Meta:
         model = Material
@@ -66,6 +67,21 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = "__all__"
+
+
+class PostListSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+    user_info = UserSerializer(source="user", read_only=True)
+    comments_count = serializers.IntegerField(
+        source='post_comments.count',
+        read_only=True
+    )
+
+    class Meta:
+        model = Post
+        exclude = ("classroom", )
 
 
 class PostUpdateSerializer(serializers.ModelSerializer):
@@ -129,6 +145,17 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class ClassRoomSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+    user_info = UserSerializer(source="user", read_only=True)
+
+    class Meta:
+        model = ClassRoom
+        exclude = ("students", "student_requests", "attachments")
+
+
+class UncleanClassRoomSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
