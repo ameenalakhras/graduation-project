@@ -13,7 +13,7 @@ from authentication.models import User
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer, \
     PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, EditMaterialSerializer, CommentsUpdateSerializer, \
     PostUpdateSerializer, TaskUpdateSerializer, TaskSolutionInfoSerializer, TaskSolutionInfoUpdateSerializer, \
-    EditClassRoomSerializer
+    EditClassRoomSerializer, PostListSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo, TaskSolution
 from classroom.utils import generate_promo_code
 from classroom.views_utils import check_user_enrolled, check_classroom_owner, check_attachment_owner, \
@@ -218,6 +218,12 @@ class CommentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN
             )
 
+    @check_enrolled_related(model=Post)
+    def list(self, request, *args, **kwargs):
+        post_pk = kwargs.get("pk", None)
+        self.queryset = self.queryset.filter(post=post_pk)
+        return super(CommentViewSet, self).list(request, *args, **kwargs)
+
 
 class TaskViewSetRoot(viewsets.ModelViewSet):
     queryset = Task.objects.all().order_by("-created_at")
@@ -354,6 +360,13 @@ class PostViewSetRoot(viewsets.ModelViewSet):
         request.data["classroom"] = classroom_pk
         request.data._mutable = False
         return super(PostViewSetRoot, self).create(request, *args, **kwargs)
+
+    @check_user_enrolled
+    def list(self, request, *args, **kwargs):
+        classroom_pk = kwargs.get("pk", None)
+        self.queryset = self.queryset.filter(classroom=classroom_pk)
+        self.serializer_class = PostListSerializer
+        return super(PostViewSetRoot, self).list(request, *args, **kwargs)
 
 
 class PostViewSet(PostViewSetRoot):
