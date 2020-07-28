@@ -2,7 +2,7 @@ from django.urls import path
 
 from classroom.views import ClassRoomViewSet, CommentViewSet, TaskViewSet, PostViewSet, MaterialViewSet, \
     ClassRoomViewSetRoot, PostViewSetRoot, MaterialViewSetRoot, TaskViewSetRoot, TaskSolutionInfoViewSet, \
-    UncleanClassRoomViewSetRoot
+    UncleanClassRoomViewSetRoot, UncleanClassRoomViewSet
 
 list_create = {"get": "list", "post": "create"}
 all_actions = {"get": "retrieve", "delete": "destroy", "post": "create", "patch": "partial_update"}
@@ -26,6 +26,12 @@ urlpatterns = [
     ),
          name="classroom_detail"
          ),
+    path('unclean_classrooms/<int:pk>', UncleanClassRoomViewSet.as_view(
+        actions={"get": "retrieve", "delete": "destroy", "patch": "partial_update"}
+    ),
+         name="classroom_detail"
+         ),
+
     path('classrooms/<int:pk>/unroll', ClassRoomViewSet.as_view(
         actions={"post": "unroll"}
         )

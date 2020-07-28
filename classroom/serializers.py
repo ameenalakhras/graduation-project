@@ -137,14 +137,14 @@ class TaskSerializer(serializers.ModelSerializer):
     )
     user_info = UserSerializer(source="user", read_only=True)
     attachments_info = AttachmentSerializer(source="attachments", read_only=True, many=True)
-    solutions = TaskSolutionInfoSerializer(source="students")
+    solutions = TaskSolutionInfoSerializer(source="students", read_only=True)
 
     class Meta:
         model = Task
         fields = "__all__"
 
 
-class ClassRoomSerializer(serializers.ModelSerializer):
+class CleanClassRoomSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
@@ -155,7 +155,7 @@ class ClassRoomSerializer(serializers.ModelSerializer):
         exclude = ("students", "student_requests", "attachments")
 
 
-class UncleanClassRoomSerializer(serializers.ModelSerializer):
+class ClassRoomSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
