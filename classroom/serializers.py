@@ -149,6 +149,17 @@ class ClassRoomSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault(),
     )
     user_info = UserSerializer(source="user", read_only=True)
+
+    class Meta:
+        model = ClassRoom
+        exclude = ("students", "student_requests", "attachments")
+
+
+class UncleanClassRoomSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+    user_info = UserSerializer(source="user", read_only=True)
     student_objects = UserSerializer(source="students", many=True, read_only=True)
     student_requests_objects = UserSerializer(source="student_requests", many=True, read_only=True)
     posts = PostSerializer(source="class_posts", many=True, read_only=True)
