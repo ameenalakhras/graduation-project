@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo, \
     TaskSolution  # , ClassRoomTeacher
+from course.serializers import CourseSerializer
 from main.serializers import AttachmentSerializer
 
 from authentication.serializers import UserSerializer
@@ -149,10 +150,14 @@ class CleanClassRoomSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault(),
     )
     user_info = UserSerializer(source="user", read_only=True)
+    students_count = serializers.IntegerField(
+        source='students.count',
+        read_only=True
+    )
 
     class Meta:
         model = ClassRoom
-        exclude = ("students", "student_requests", "attachments")
+        exclude = ("student_requests", "attachments", "students")
 
 
 class ClassRoomSerializer(serializers.ModelSerializer):
@@ -165,7 +170,8 @@ class ClassRoomSerializer(serializers.ModelSerializer):
     posts = PostSerializer(source="class_posts", many=True, read_only=True)
     material = MaterialSerializer(source="classroom_material", many=True, read_only=True)
     classroom_tasks_info = TaskSerializer(source="classroom_tasks", many=True, read_only=True)
+    course = CourseSerializer(source="classroom_courses", many=True, read_only=True)
 
     class Meta:
         model = ClassRoom
-        exclude =  ("students", "student_requests")
+        exclude = ("students", "student_requests")

@@ -42,7 +42,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         try:
-            import ipdb;ipdb.set_trace()
             validate_password(attrs['password'])
         except DjangoValidationError as e:
             raise CustomValidationError(
