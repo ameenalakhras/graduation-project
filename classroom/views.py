@@ -10,6 +10,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 
 from authentication.models import User
+from authentication.serializers import UserSerializer
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer, \
     PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, EditMaterialSerializer, CommentsUpdateSerializer, \
     PostUpdateSerializer, TaskUpdateSerializer, TaskSolutionInfoSerializer, TaskSolutionInfoUpdateSerializer, \
@@ -21,6 +22,7 @@ from classroom.views_utils import check_user_enrolled, check_classroom_owner, ch
     check_enrolled_related
 from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
     OnlyEnrolled, OwnerOnlyDeletesAndEdits, OnlyEnrolledRelated, OwnerAndTeacherDeleteOnly
+from course.serializers import CourseSerializer
 
 
 class ClassRoomViewSetRoot(viewsets.ModelViewSet):
@@ -193,6 +195,24 @@ class ClassRoomViewSet(ClassRoomViewSetRoot):
         return Response(data={
             "message": "The student has been added to the classroom."
         }, status=status.HTTP_200_OK)
+
+    def list_students(self, request, *args, **kwargs):
+        obj = self.get_object()
+        queryset = obj.students
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def list_student_requests(self, request, *args, **kwargs):
+        obj = self.get_object()
+        queryset = obj.student_requests
+        serializer = UserSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def list_courses(self, request, *args, **kwargs):
+        obj = self.get_object()
+        queryset = obj.classroom_courses
+        serializer = CourseSerializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class UncleanClassRoomViewSet(ClassRoomViewSet):

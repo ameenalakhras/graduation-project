@@ -36,6 +36,18 @@ urlpatterns = [
         actions={"post": "unroll"}
         )
     ),
+    path('classrooms/<int:pk>/students', ClassRoomViewSet.as_view(
+        actions={"get": "list_students"}
+    )
+         ),
+    path('classrooms/<int:pk>/student_requests', ClassRoomViewSet.as_view(
+        actions={"get": "list_student_requests"}
+    )
+         ),
+    path('classrooms/<int:pk>/courses', ClassRoomViewSet.as_view(
+        actions={"get": "list_courses"}
+    )
+         ),
     path('classrooms/<int:pk>/accept', ClassRoomViewSet.as_view(
         actions={"post": "accept"}
         )
