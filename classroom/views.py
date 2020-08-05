@@ -22,7 +22,7 @@ from classroom.views_utils import check_user_enrolled, check_classroom_owner, ch
     check_enrolled_related
 from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
     OnlyEnrolled, OwnerOnlyDeletesAndEdits, OnlyEnrolledRelated, OwnerAndTeacherDeleteOnly
-from course.serializers import CourseSerializer
+from course.serializers import CourseSerializer, CourseListSerializer
 
 
 class ClassRoomViewSetRoot(viewsets.ModelViewSet):
@@ -211,7 +211,7 @@ class ClassRoomViewSet(ClassRoomViewSetRoot):
     def list_courses(self, request, *args, **kwargs):
         obj = self.get_object()
         queryset = obj.classroom_courses
-        serializer = CourseSerializer(queryset, many=True)
+        serializer = CourseListSerializer(queryset, many=True)
         return Response(serializer.data)
 
 
@@ -286,6 +286,31 @@ class TaskViewSet(viewsets.ModelViewSet):
             serializer_class = TaskUpdateSerializer
 
         return serializer_class
+
+    def delivered_students_ids(self):
+        task_obj = self.get_object()
+
+        task_solutions = task_obj.solution.all()
+        delivered_solutions_students_ids = task_solutions.values_list('user', flat=True)
+        return delivered_solutions_students_ids
+
+    def delivered_students(self, request, *args, **kwargs):
+        task_obj = self.get_object()
+        classroom_students = task_obj.classroom.students.all()
+
+        delivered_solutions_students_ids = self.delivered_students_ids()
+        delivered_solutions_students = classroom_students.filter(id__in=delivered_solutions_students_ids)
+        user_serializer = UserSerializer(delivered_solutions_students, many=True)
+        return Response(user_serializer.data, status=status.HTTP_200_OK)
+
+    def undelivered_students(self, request, *args, **kwargs):
+        task_obj = self.get_object()
+        classroom_students = task_obj.classroom.students.all()
+
+        delivered_solutions_students_ids = self.delivered_students_ids()
+        delivered_solutions_students = classroom_students.exclude(id__in=delivered_solutions_students_ids)
+        user_serializer = UserSerializer(delivered_solutions_students, many=True)
+        return Response(user_serializer.data, status=status.HTTP_200_OK)
 
 
 class TaskSolutionInfoViewSet(viewsets.ModelViewSet):

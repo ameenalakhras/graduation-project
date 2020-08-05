@@ -80,6 +80,13 @@ urlpatterns = [
         actions={"get": "retrieve", "delete": "destroy", "patch": "partial_update"}
     ), name="task"),
 
+    path('tasks/<int:pk>/delivered_students', TaskViewSet.as_view(
+        actions={"get": "delivered_students"}
+    ), name="task"),
+    path('tasks/<int:pk>/undelivered_students', TaskViewSet.as_view(
+        actions={"get": "undelivered_students"}
+    ), name="task"),
+
     path('classrooms/<int:pk>/posts/', PostViewSetRoot.as_view(
         actions={"post": "create", "get": "list"}
     ), name="post"),

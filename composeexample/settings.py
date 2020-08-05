@@ -40,6 +40,8 @@ USE_SENDGRID = (os.getenv("USE_SENDGRID") == "True")
 
 DEBUG = (os.getenv("DEBUG") == "True")
 
+FCM_API_KEY = os.getenv("FCM_API_KEY")
+
 if USE_SENDGRID:
     EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
     SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY") or None
@@ -71,6 +73,7 @@ INSTALLED_APPS = [
     'classroom',
     'course',
     'mail',
+    'fcm_service',
 ]
 
 MIDDLEWARE = [

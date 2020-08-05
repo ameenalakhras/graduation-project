@@ -8,10 +8,10 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 
 from rest_framework import serializers, status
 from rest_framework.authtoken.models import Token
-from rest_framework.exceptions import ValidationError
 
 from authentication.errors import CustomValidationError
-from authentication.models import User, CustomToken, FCMToken, PushMessages
+from authentication.models import User, CustomToken
+from fcm_service.serializers import FCMTokenSerializer
 from main.serializers import UserProfileSerializer
 
 
@@ -165,41 +165,6 @@ class ResetPasswordSerializer(serializers.Serializer):
             return attrs
 
 
-class FCMTokenSerializer(serializers.ModelSerializer):
-    user = serializers.HiddenField(
-        default=serializers.CurrentUserDefault(),
-    )
-
-    def is_valid(self, *args, **kwargs):
-        try:
-            data = self.run_validation(self.initial_data)
-        except ValidationError as e:
-            # if it's the error that the key is unique
-            if e.get_codes()["key"][0] == "unique":
-                raise CustomValidationError("key already exists (duplicated key)", status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
-            else:
-                raise e
-        else:
-
-            try:
-                fcm_token_exists = data.get("user").fcm_token
-                raise CustomValidationError("user already has a key.", status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
-            except User.fcm_token.RelatedObjectDoesNotExist:
-                return super(FCMTokenSerializer, self).is_valid(*args, **kwargs)
-
-    class Meta:
-        model = FCMToken
-        fields = "__all__"
-
-
-class FCMTokenUpdateSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = FCMToken
-        fields = ("id", "key")
-
-
 class TokenSerializer(serializers.ModelSerializer):
     auth_token = serializers.CharField(source='key')
     fcm_token = FCMTokenSerializer(source="user.fcm_token")
@@ -210,7 +175,3 @@ class TokenSerializer(serializers.ModelSerializer):
         fields = ("auth_token", "created", "user", "fcm_token")
 
 
-class PushMessagesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PushMessages
-        exclude = ("user", )
