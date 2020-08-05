@@ -67,7 +67,7 @@ class Task(BaseModel):
 
 
 class TaskSolutionInfo(BaseModel):
-    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE, limit_choices_to={"_type": 3})
+    attachment = models.ForeignKey(Attachment, on_delete=models.CASCADE, limit_choices_to={"_type": 2})
     notes = models.CharField(max_length=300, null=True)
     accepted = models.BooleanField(null=True)
 
@@ -75,7 +75,7 @@ class TaskSolutionInfo(BaseModel):
 class TaskSolution(BaseModel):
     accepted = models.BooleanField(null=True)
     solutionInfo = models.ManyToManyField(TaskSolutionInfo, blank=True, related_name="task_main_model")
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="students")
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="solution")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     class Meta:

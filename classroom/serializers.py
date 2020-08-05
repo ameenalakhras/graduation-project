@@ -109,9 +109,11 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
 
 
 class TaskSolutionInfoSerializer(serializers.ModelSerializer):
+    attachment_info = AttachmentSerializer(source="attachment", read_only=True)
+
     class Meta:
         model = TaskSolutionInfo
-        fields = ("notes", "id")
+        fields = ("notes", "id", "attachment", "attachment_info")
 
 
 class TaskSolutionInfoUpdateSerializer(serializers.ModelSerializer):
@@ -138,7 +140,7 @@ class TaskSerializer(serializers.ModelSerializer):
     )
     user_info = UserSerializer(source="user", read_only=True)
     attachments_info = AttachmentSerializer(source="attachments", read_only=True, many=True)
-    solutions = TaskSolutionInfoSerializer(source="students", read_only=True)
+    # solutions = TaskSolutionInfoSerializer(source="students", read_only=True)
 
     class Meta:
         model = Task
