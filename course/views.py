@@ -1,4 +1,4 @@
-from course.serializers import MediaSerializer, CourseSerializer
+from course.serializers import MediaSerializer, CourseSerializer, CourseListSerializer
 from course.models import Media, Course
 from composeexample.permissions import OwnerEditOnly
 
@@ -16,3 +16,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all().order_by("-created_at")
     serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated, OwnerEditOnly]
+
+    def list(self, request, *args, **kwargs):
+        self.serializer_class = CourseListSerializer
+        super(CourseViewSet, self).list(request, *args, **kwargs)

@@ -16,7 +16,7 @@ class Course(BaseModel):
 
 
 class Media(BaseModel):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="course")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="media")
     provider = models.CharField(choices=PROVIDER_CHOICES, default=PROVIDER_CHOICES[0][0], max_length=30)
     path = models.URLField()
     thumbnail = models.ImageField(
