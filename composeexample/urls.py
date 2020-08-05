@@ -30,6 +30,7 @@ urlpatterns = [
     path("api/", include("course.urls")),
     path("api/", include("mail.urls")),
     path("api/", include("main.urls")),
+    path("api/", include("fcm_service.urls"))
 
 ]
 

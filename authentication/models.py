@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.auth import authenticate
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db.models.signals import post_save
@@ -27,24 +26,6 @@ class User(AbstractUser):
     def reset_password(self, token, token_created_at, token_is_used, token_deleted_at):
         """reset the users password by sending a token to his email"""
         pass
-
-
-class FCMToken(BaseModel):
-    """
-    token for firebase cloud messaging (used for android push notifications)
-    """
-
-    key = models.CharField(_("Key"), max_length=100, unique=True)
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, related_name='fcm_token',
-        on_delete=models.CASCADE
-    )
-
-
-class PushMessages(BaseModel):
-    user = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='push_messages')
-    title = models.CharField(max_length=50)
-    body = models.CharField(max_length=250)
 
 
 class CustomToken(BaseModel):

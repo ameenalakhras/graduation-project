@@ -8,7 +8,7 @@ class CustomValidationError(APIException):
     default_detail = _('Invalid input.')
     default_code = 'invalid'
 
-    def __init__(self, detail=None, status_code=None):
+    def __init__(self, detail=None, status_code=None, data=None):
         if detail is None:
             detail = self.default_detail
         if status_code is None:
@@ -17,3 +17,6 @@ class CustomValidationError(APIException):
             self.status_code = status_code
 
         self.detail = {"message": detail}
+        if data:
+            self.detail["data"] = data
+
