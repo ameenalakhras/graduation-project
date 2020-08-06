@@ -57,7 +57,7 @@ class Material(BaseModel):
 class Task(BaseModel):
     average_degree = models.IntegerField(null=True)
     # creator: originally a teacher or an assistant
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tasks")
     title = models.CharField(max_length=50)
     content = models.TextField()
     attachments = models.ManyToManyField(Attachment, blank=True)

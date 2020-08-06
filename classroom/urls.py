@@ -2,7 +2,7 @@ from django.urls import path
 
 from classroom.views import ClassRoomViewSet, CommentViewSet, TaskViewSet, PostViewSet, MaterialViewSet, \
     ClassRoomViewSetRoot, PostViewSetRoot, MaterialViewSetRoot, TaskViewSetRoot, TaskSolutionInfoViewSet, \
-    UncleanClassRoomViewSetRoot, UncleanClassRoomViewSet
+    UncleanClassRoomViewSetRoot, UncleanClassRoomViewSet, TaskSolutionViewSet
 
 list_create = {"get": "list", "post": "create"}
 all_actions = {"get": "retrieve", "delete": "destroy", "post": "create", "patch": "partial_update"}
@@ -94,9 +94,15 @@ urlpatterns = [
         actions={"get": "retrieve", "delete": "destroy", "patch": "partial_update"}),
          name="post"
          ),
-    path('tasks/<int:pk>/solution/', TaskSolutionInfoViewSet.as_view(
+    path('tasks/<int:pk>/submit_solution/', TaskSolutionInfoViewSet.as_view(
         actions={"post": "create"}
     ), name="task"),
+    path('tasks/<int:pk>/solutions/', TaskSolutionViewSet.as_view(
+        actions={"get": "list"}
+    ), name="list_task_solution"),
+    path("submitted_tasks/", TaskSolutionViewSet.as_view(
+        actions={"get": "list_user_submitted_tasks"}
+    ), name="list_user_submitted_tasks"),
     path('tasks_solution/<int:pk>/', TaskSolutionInfoViewSet.as_view(
         actions={"patch": "update"}
     ), name="task_solution_update"),

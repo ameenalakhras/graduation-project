@@ -127,7 +127,7 @@ class TaskSolutionInfoUpdateSerializer(serializers.ModelSerializer):
 
 
 class TaskSolutionSerializer(serializers.ModelSerializer):
-    solutionInfo = TaskSolutionInfoSerializer()
+    solutionInfo = TaskSolutionInfoSerializer(many=True)
 
     class Meta:
         model = TaskSolution
@@ -177,3 +177,12 @@ class ClassRoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClassRoom
         exclude = ("students", "student_requests")
+
+
+class ListSubmittedTasksSolutionSerializer(serializers.ModelSerializer):
+    task_title = serializers.CharField(source="task.title")
+    classroom_name = serializers.CharField(source="task.classroom.title")
+
+    class Meta:
+        model = TaskSolution
+        fields = ("id", "task_title", "classroom_name", "task", "accepted")
