@@ -14,7 +14,8 @@ from authentication.serializers import UserSerializer
 from classroom.serializers import ClassRoomSerializer, CommentsSerializer, TaskSerializer, \
     PostSerializer, MaterialSerializer, ClassroomMaterialSerializer, EditMaterialSerializer, CommentsUpdateSerializer, \
     PostUpdateSerializer, TaskUpdateSerializer, TaskSolutionInfoSerializer, TaskSolutionInfoUpdateSerializer, \
-    EditClassRoomSerializer, PostListSerializer, CleanClassRoomSerializer
+    EditClassRoomSerializer, PostListSerializer, CleanClassRoomSerializer, TaskSolutionSerializer, \
+    ListSubmittedTasksSolutionSerializer
 from classroom.models import ClassRoom, Comments, Task, Post, Material, TaskSolutionInfo, TaskSolution
 from classroom.utils import generate_promo_code
 from classroom.views_utils import check_user_enrolled, check_classroom_owner, check_attachment_owner, \
@@ -342,21 +343,28 @@ class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         task_pk = kwargs.get("pk", None)
         task = get_object_or_404(Task, pk=task_pk)
-        task_solution_exists = TaskSolution.objects.filter(task=task, user=request.user).exists()
-        if task_solution_exists:
-            # make sure solution isn't accepted >> create solution info
-            task_solution = get_object_or_404(TaskSolution, task=task, user=request.user)
-            if task_solution.accepted:
-                return Response(
-                    data={"info": "you have an accepted solution already, you can't submit more solutions."},
-                    status=status.HTTP_403_FORBIDDEN
-                )
-            else:
+        if task.accept_solutions:
+            task_solution_exists = TaskSolution.objects.filter(task=task, user=request.user).exists()
+            if task_solution_exists:
+                # make sure solution isn't accepted >> create solution info
+                task_solution = get_object_or_404(TaskSolution, task=task, user=request.user)
+                if task_solution.accepted:
+                    return Response(
+                        data={"info": "you have an accepted solution already, you can't submit more solutions."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+                else:
 
+                    return self.perform_create_task_solution(request, task_solution, *args, **kwargs)
+            else:
+                task_solution = TaskSolution.objects.create(task=task, user=request.user)
                 return self.perform_create_task_solution(request, task_solution, *args, **kwargs)
         else:
-            task_solution = TaskSolution.objects.create(task=task, user=request.user)
-            return self.perform_create_task_solution(request, task_solution, *args, **kwargs)
+            return Response(
+                data={
+                    "message": "the task doesn't accept solutions anymore."
+                }, status=status.HTTP_401_UNAUTHORIZED
+            )
 
     @check_requester_is_teacher
     @check_task_solution_info_class_owner
@@ -401,6 +409,23 @@ class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
                 data={"info": "acceptance status isn't recognized."},
                 status=status.HTTP_403_FORBIDDEN
             )
+
+
+class TaskSolutionViewSet(viewsets.ModelViewSet):
+    queryset = TaskSolution.objects.all().order_by("-created_at")
+    serializer_class = TaskSolutionSerializer
+    permission_classes = [IsAuthenticated]
+    filterset_fields = ['user']
+
+    def list(self, request, *args, **kwargs):
+        # filter by task id
+        self.queryset = self.queryset.filter(task=kwargs.get("pk", None))
+        return super(TaskSolutionViewSet, self).list(request, *args, **kwargs)
+
+    def list_user_submitted_tasks(self, request, *args, **kwargs):
+        self.queryset = self.queryset.filter(user=request.user)
+        self.serializer_class = ListSubmittedTasksSolutionSerializer
+        return super(TaskSolutionViewSet, self).list(request, *args, **kwargs)
 
 
 class PostViewSetRoot(viewsets.ModelViewSet):
