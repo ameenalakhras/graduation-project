@@ -247,7 +247,23 @@ class CommentViewSet(viewsets.ModelViewSet):
         request.data._mutable = True
         request.data["post"] = post_pk
         request.data._mutable = False
-        return super().create(request, *args, **kwargs)
+        response = super().create(request, *args, **kwargs)
+
+        if response.status_code == 201:
+            comment_id = response.data.get("id")
+            comment = get_object_or_404(Comments, id=comment_id)
+            user = comment.post.user
+            data = {
+                "comment": comment,
+            }
+            send_notification(
+                user=user,
+                request_type="comment",
+                data=data,
+                many=False
+            )
+
+        return response
 
     @check_enrolled_related(model=Post)
     def list(self, request, *args, **kwargs):
@@ -400,10 +416,9 @@ class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
                 if one_solution_accepted:
                     task_solution_obj.accepted = True
                     task_solution_obj.save()
-                return response
             # if a solution is accepted already
             else:
-                return Response(
+                response = Response(
                     data={"info": "the student has an accepted solution already, you can't accept more solutions."},
                     status=status.HTTP_403_FORBIDDEN
                 )
@@ -416,17 +431,30 @@ class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
                     task_solution_obj.accepted = False
                     task_solution_obj.save()
 
-                return response
-
             else:
                 response = super(TaskSolutionInfoViewSet, self).update(request, *args, **kwargs)
-                return response
 
         else:
-            return Response(
+            response = Response(
                 data={"info": "acceptance status isn't recognized."},
                 status=status.HTTP_403_FORBIDDEN
             )
+
+        if response.status_code == 200:
+            solution = self.get_object()
+            solution_main_model=solution.task_main_model.first()
+            data = {
+                "solution": solution,
+                "solution_main_model": solution_main_model
+            }
+            send_notification(
+                user=solution_main_model.user,
+                request_type="accept_or_reject_task_solution",
+                data=data,
+                many=False
+            )
+
+        return response
 
 
 class TaskSolutionViewSet(viewsets.ModelViewSet):
@@ -461,9 +489,11 @@ class PostViewSetRoot(viewsets.ModelViewSet):
 
         response = super(PostViewSetRoot, self).create(request, *args, **kwargs)
         if response.status_code == 201:
+            post_id = response.data.get("id")
+            post = get_object_or_404(Post, id=post_id)
             data = {
                 "classroom": classroom,
-                "post_description": request.data.get("content")
+                "post": post
             }
             send_notification(
                 user=classroom.students.all(),

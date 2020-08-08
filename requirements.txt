@@ -16,3 +16,4 @@ sendgrid
 boto3==1.10.45
 django-storages==1.8
 django-cors-headers
+pyfcm==1.4.7
