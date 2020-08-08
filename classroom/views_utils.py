@@ -149,8 +149,11 @@ def check_task_solution_info_class_owner(f):
     checks if the requester changing the acceptance of the task solutions is the owner of the task submitted
     """
     def wrapper(*args, **kwargs):
-        obj, request = args
-        task_owner = obj.task_main_model.task.user
+        view_set_obj, request = args
+        model_obj = view_set_obj.get_object()
+        # the "first" function will be removed when i change the ManyToMany field
+        # from TaskSolution to foreign key in TaskSolutionInfo
+        task_owner = model_obj.task_main_model.first().task.user
         requester = request.user
         if task_owner == requester:
             return f(*args, **kwargs)

@@ -46,3 +46,25 @@ def send_multi_notifications(users, message_title, message_body):
         push_messages_obj.users.set(users)
         push_messages_obj.save()
     return result
+
+
+def generate_title_and_body(request_type, data):
+    if request_type == "post":
+        title = f"new post in classroom {data.get('classroom').title}"
+        description = f"{data.get('post_description')[:30]}"
+
+    elif request_type == "task":
+        title = f"new task in classroom {data.get('classroom').title}"
+        description = f"task {data.get('task').title}"
+
+    return title, description
+
+
+def send_notification(user, request_type, data, many=True):
+    title, description = generate_title_and_body(request_type, data)
+    if many:
+        result = send_multi_notifications(user, title, description)
+    else:
+        result = send_single_notifications(user, title, description)
+
+    return result
