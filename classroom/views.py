@@ -247,7 +247,23 @@ class CommentViewSet(viewsets.ModelViewSet):
         request.data._mutable = True
         request.data["post"] = post_pk
         request.data._mutable = False
-        return super().create(request, *args, **kwargs)
+        response = super().create(request, *args, **kwargs)
+
+        if response.status_code == 201:
+            comment_id = response.data.get("id")
+            comment = get_object_or_404(Comments, id=comment_id)
+            user = comment.post.user
+            data = {
+                "comment": comment,
+            }
+            send_notification(
+                user=user,
+                request_type="comment",
+                data=data,
+                many=False
+            )
+
+        return response
 
     @check_enrolled_related(model=Post)
     def list(self, request, *args, **kwargs):
@@ -461,9 +477,11 @@ class PostViewSetRoot(viewsets.ModelViewSet):
 
         response = super(PostViewSetRoot, self).create(request, *args, **kwargs)
         if response.status_code == 201:
+            post_id = response.data.get("id")
+            post = get_object_or_404(Post, id=post_id)
             data = {
                 "classroom": classroom,
-                "post_description": request.data.get("content")
+                "post": post
             }
             send_notification(
                 user=classroom.students.all(),
