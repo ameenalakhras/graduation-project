@@ -55,18 +55,33 @@ def send_multi_notifications(users, message_title, message_body):
 def generate_title_and_body(request_type, data):
     if request_type == "post":
         # data needed: classroom, post
-        title = f"new post in classroom {data.get('classroom').title}"
-        description = f"{data.get('post').content[:30]}"
+        classroom = data.get('classroom')
+        post = data.get('post')
+        title = f"new post in classroom {classroom.title}"
+        description = f"{post.content[:30]}"
 
     elif request_type == "task":
         # data needed: classroom, task
-        title = f"new task in classroom {data.get('classroom').title}"
-        description = f"task {data.get('task').title}"
+        task = data.get('task')
+        classroom = data.get('classroom')
+        title = f"new task in classroom {classroom.title}"
+        description = f"task {task.title}"
 
     if request_type == "comment":
         # data needed: classroom, task
-        title = f"{data.get('comment').user.username} has commented on your post"
-        description = data.get('comment')
+        comment = data.get('comment')
+        title = f"{comment.user.username} has commented on your post"
+        description = comment.content
+
+    if request_type == "accept_or_reject_task_solution":
+        solution = data.get("solution")
+        solution_main_model = data.get('solution_main_model')
+        if solution.accepted:
+            status = 'accepted'
+        else:
+            status = "rejected"
+        title = f"solution {status}"
+        description = f"your solution to task {solution_main_model.task.title} has been {status}"
 
     return title, description
 

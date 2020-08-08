@@ -416,10 +416,9 @@ class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
                 if one_solution_accepted:
                     task_solution_obj.accepted = True
                     task_solution_obj.save()
-                return response
             # if a solution is accepted already
             else:
-                return Response(
+                response = Response(
                     data={"info": "the student has an accepted solution already, you can't accept more solutions."},
                     status=status.HTTP_403_FORBIDDEN
                 )
@@ -432,17 +431,30 @@ class TaskSolutionInfoViewSet(viewsets.ModelViewSet):
                     task_solution_obj.accepted = False
                     task_solution_obj.save()
 
-                return response
-
             else:
                 response = super(TaskSolutionInfoViewSet, self).update(request, *args, **kwargs)
-                return response
 
         else:
-            return Response(
+            response = Response(
                 data={"info": "acceptance status isn't recognized."},
                 status=status.HTTP_403_FORBIDDEN
             )
+
+        if response.status_code == 200:
+            solution = self.get_object()
+            solution_main_model=solution.task_main_model.first()
+            data = {
+                "solution": solution,
+                "solution_main_model": solution_main_model
+            }
+            send_notification(
+                user=solution_main_model.user,
+                request_type="accept_or_reject_task_solution",
+                data=data,
+                many=False
+            )
+
+        return response
 
 
 class TaskSolutionViewSet(viewsets.ModelViewSet):
