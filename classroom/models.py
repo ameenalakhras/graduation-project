@@ -74,6 +74,7 @@ class TaskSolutionInfo(BaseModel):
 
 class TaskSolution(BaseModel):
     accepted = models.BooleanField(null=True)
+    # this field (solutionInfo) should be a foreign key in TaskSolutionInfo model and direct to TaskSolution
     solutionInfo = models.ManyToManyField(TaskSolutionInfo, blank=True, related_name="task_main_model")
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="solution")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

@@ -24,6 +24,7 @@ from classroom.views_utils import check_user_enrolled, check_classroom_owner, ch
 from composeexample.permissions import OwnerEditOnly, OnlyTeacherCreates, \
     OnlyEnrolled, OwnerOnlyDeletesAndEdits, OnlyEnrolledRelated, OwnerAndTeacherDeleteOnly
 from course.serializers import CourseSerializer, CourseListSerializer
+from fcm_service.utils import send_notification
 
 
 class ClassRoomViewSetRoot(viewsets.ModelViewSet):
@@ -266,7 +267,24 @@ class TaskViewSetRoot(viewsets.ModelViewSet):
         request.data._mutable = True
         request.data["classroom"] = classroom_pk
         request.data._mutable = False
-        return super(TaskViewSetRoot, self).create(request, *args, **kwargs)
+        response = super(TaskViewSetRoot, self).create(request, *args, **kwargs)
+
+        if response.status_code == 201:
+            classroom = get_object_or_404(ClassRoom, id=classroom_pk)
+            task_id = response.data.get("id")
+            task = get_object_or_404(Task, id=task_id)
+            data = {
+                "classroom": classroom,
+                "task": task
+            }
+            send_notification(
+                user=classroom.students.all(),
+                request_type="task",
+                data=data,
+                many=True
+            )
+
+        return response
 
     @check_user_enrolled
     def list(self, request, *args, **kwargs):
@@ -439,7 +457,22 @@ class PostViewSetRoot(viewsets.ModelViewSet):
         request.data._mutable = True
         request.data["classroom"] = classroom_pk
         request.data._mutable = False
-        return super(PostViewSetRoot, self).create(request, *args, **kwargs)
+        classroom = get_object_or_404(ClassRoom, id=classroom_pk)
+
+        response = super(PostViewSetRoot, self).create(request, *args, **kwargs)
+        if response.status_code == 201:
+            data = {
+                "classroom": classroom,
+                "post_description": request.data.get("content")
+            }
+            send_notification(
+                user=classroom.students.all(),
+                request_type="post",
+                data=data,
+                many=True
+            )
+
+        return response
 
     @check_user_enrolled
     def list(self, request, *args, **kwargs):
