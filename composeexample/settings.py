@@ -55,6 +55,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY=os.getenv("DJANGO_SECRET_KEY")
 
+YOUTUBE_API_ACCESS_KEY = os.getenv("YOUTUBE_API_ACCESS_KEY", None)
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
