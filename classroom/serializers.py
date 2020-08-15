@@ -156,6 +156,22 @@ class CleanClassRoomSerializer(serializers.ModelSerializer):
         source='students.count',
         read_only=True
     )
+    students_requests_count = serializers.IntegerField(
+        source='student_requests.count',
+        read_only=True
+    )
+    material_count = serializers.IntegerField(
+        source='classroom_material.count',
+        read_only=True
+    )
+    tasks_count = serializers.IntegerField(
+        source='classroom_tasks.count',
+        read_only=True
+    )
+    course_count = serializers.IntegerField(
+        source='classroom_courses.count',
+        read_only=True
+    )
 
     class Meta:
         model = ClassRoom
