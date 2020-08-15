@@ -45,9 +45,12 @@ def create_video_details(sender, instance, **kwargs):
     video_id = extract_video_id(instance.path)
     if video_id is not None:
         data = video_details(video_id)
-        instance.title = data["snippet"]["title"]
+        if not instance.title:
+            instance.title = data["snippet"]["title"]
+        if not instance.description:
+            instance.description = data['snippet']['description']
+
         image_url = data['snippet']['thumbnails']['default']['url']
-        instance.description = data['snippet']['description']
 
         name = urllib.parse.urlparse(image_url).path.split('/')[-1]
         response = requests.get(image_url)

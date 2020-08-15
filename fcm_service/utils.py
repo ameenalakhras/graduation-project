@@ -58,7 +58,7 @@ def generate_title_and_body(request_type, data):
         classroom = data.get('classroom')
         post = data.get('post')
         title = f"new post in classroom {classroom.title}"
-        description = f"{post.content[:30]}"
+        description = f"{post.content}"
 
     elif request_type == "task":
         # data needed: classroom, task
@@ -70,7 +70,7 @@ def generate_title_and_body(request_type, data):
     if request_type == "comment":
         # data needed: classroom, task
         comment = data.get('comment')
-        title = f"{comment.user.username} has commented on your post"
+        title = f"{comment.user.first_name} has commented on your post"
         description = comment.content
 
     if request_type == "accept_or_reject_task_solution":

@@ -52,4 +52,4 @@ class FCMTokenUpdateSerializer(serializers.ModelSerializer):
 class PushMessagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = PushMessages
-        exclude = ("user", )
+        exclude = ("users", )
