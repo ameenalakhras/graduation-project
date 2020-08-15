@@ -34,7 +34,8 @@ def video_details(video_id):
 
 def extract_video_id(video_url):
     """extract youtube video id from its url"""
-    url_data = urllib.parse.urlparse("http://www.youtube.com/watch?v=z_AbfPXTKms&NR=1")
+    # video_url = "http://www.youtube.com/watch?v=z_AbfPXTKms&NR=1"
+    url_data = urllib.parse.urlparse(video_url)
     query = urllib.parse.parse_qs(url_data.query)
     video_id = query["v"][0]
     return video_id
