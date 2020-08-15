@@ -17,7 +17,11 @@ def send_single_notifications(user, message_title, message_body):
     result = push_service.notify_single_device(
         registration_id=fcm_obj.key,
         message_title=message_title,
-        message_body=message_body
+        message_body=message_body,
+        data_message={
+            "body": message_body,
+            "title": message_title
+        }
     )
     if result.get("success"):
         push_messages_obj = PushMessages.objects.create(
@@ -40,7 +44,11 @@ def send_multi_notifications(users, message_title, message_body):
     result = push_service.notify_multiple_devices(
         registration_ids=registration_ids,
         message_title=message_title,
-        message_body=message_body
+        message_body=message_body,
+        data_message={
+            "body": message_body,
+            "title": message_title
+        }
     )
     if result.get("success"):
         push_messages_obj = PushMessages.objects.create(
