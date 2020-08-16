@@ -2,10 +2,10 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.generics import RetrieveDestroyAPIView, CreateAPIView, UpdateAPIView, ListAPIView
+from rest_framework.generics import RetrieveDestroyAPIView, CreateAPIView, UpdateAPIView, GenericAPIView
+from rest_framework.views import APIView
 
 from authentication.choices import TOKEN_TYPES_DICT
 from authentication.serializers import UserRegistrationSerializer, UserLoginSerializer, TokenSerializer, \
@@ -50,7 +50,6 @@ class UserLoginAPIView(GenericAPIView):
                 status=status.HTTP_200_OK,
             )
         else:
-            import ipdb;ipdb.set_trace()
             return Response(
                 data=serializer.errors,
                 status=status.HTTP_401_UNAUTHORIZED,
@@ -80,6 +79,21 @@ class UserPasswordChange(GenericAPIView):
                 data=serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class Logout(APIView):
+    def get(self, request):
+        # simply delete the token to force a login
+        # request.user.auth_token.delete()
+        # delete the fcm token
+        try:
+            request.user.fcm_token.delete()
+        except User.fcm_token.RelatedObjectDoesNotExist:
+            pass
+        return Response(
+            data={"message": "you have been logged out."},
+            status=status.HTTP_200_OK
+        )
 
 
 class UserTokenAPIView(RetrieveDestroyAPIView):
