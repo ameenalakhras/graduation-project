@@ -495,11 +495,19 @@ class PostViewSetRoot(viewsets.ModelViewSet):
                 "classroom": classroom,
                 "post": post
             }
+            notification_kwargs = {
+                "request_type": "post",
+                "data": data,
+            }
             send_notification(
                 user=classroom.students.all(),
-                request_type="post",
-                data=data,
-                many=True
+                many=True,
+                **notification_kwargs
+            )
+            send_notification(
+                user=classroom.user,
+                many=False,
+                **notification_kwargs
             )
 
         return response

@@ -1,9 +1,8 @@
-from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 import requests
 
-from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, UpdateAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
@@ -33,19 +32,23 @@ class FCMTokenCreateAPIView(CreateAPIView, ListAPIView):
         if fcm_exists:
             fcm_token = FCMToken.objects.get(user=request.user)
             url = request.build_absolute_uri(reverse("fcm_service:fcm_token_update", kwargs={"pk": fcm_token.id}))
-            request.method = "PATCH"
-            self.request.method = "PATCH"
             response_obj = requests.patch(url, data=request.data)
-            response = Response(
-                data=response_obj.json(),
-                status=response_obj.status_code
-            )
+            if response_obj.status_code != 400:
+                response = Response(
+                    data=response_obj.json(),
+                    status=response_obj.status_code
+                )
+            else:
+                response = Response(
+                    data={"message": "server error"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             return response
         else:
             return super(FCMTokenCreateAPIView, self).create(request)
 
 
-class FCMTokenUpdateAPIView(UpdateAPIView):
+class FCMTokenUpdateDeleteAPIView(UpdateAPIView, DestroyAPIView):
     queryset = FCMToken.objects.all()
     permission_classes = [OwnerEditOnly]
     serializer_class = FCMTokenUpdateSerializer
